@@ -1,0 +1,12 @@
+Section folder: 02-iam
+
+Add your videos with these exact filenames:
+- 01-iam-users-groups-policies.mp4
+- 02-iam-roles-trust-policies.mp4
+- 03-permission-boundaries.mp4
+- 04-iam-best-practices.mp4
+- 05-aws-organizations-scp.mp4
+
+Notes:
+- Keep numbering (01, 02, 03...) for automatic ordering.
+- Supported formats: .mp4, .webm, .ogg, .mov

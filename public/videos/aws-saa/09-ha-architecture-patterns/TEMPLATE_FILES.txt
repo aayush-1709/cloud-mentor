@@ -1,0 +1,12 @@
+Section folder: 09-ha-architecture-patterns
+
+Add your videos with these exact filenames:
+- 01-multi-az-architecture.mp4
+- 02-multi-region-architecture.mp4
+- 03-fault-tolerance.mp4
+- 04-disaster-recovery-rto-rpo.mp4
+- 05-cost-optimization-patterns.mp4
+
+Notes:
+- Keep numbering (01, 02, 03...) for automatic ordering.
+- Supported formats: .mp4, .webm, .ogg, .mov

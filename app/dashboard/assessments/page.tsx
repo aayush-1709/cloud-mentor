@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { BarChart3, CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Progress } from '@/components/ui/progress'
 
@@ -27,72 +26,13 @@ export default function AssessmentsPage() {
 
   useEffect(() => {
     const fetchAssessments = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) return
-
-      // Get user's enrolled courses and their assessments
-      const { data: coursesData } = await supabase
-        .from('user_progress')
-        .select('course_id')
-        .eq('user_id', user.id)
-
-      if (!coursesData || coursesData.length === 0) {
+      const response = await fetch('/api/assessments')
+      if (!response.ok) {
         setIsLoading(false)
         return
       }
-
-      const courseIds = coursesData.map((c) => c.course_id)
-
-      // Get assessments for enrolled courses
-      const { data: assessmentsData } = await supabase
-        .from('assessments')
-        .select('*')
-        .in('course_id', courseIds)
-
-      if (!assessmentsData) {
-        setIsLoading(false)
-        return
-      }
-
-      // Get assessment results for display
-      const assessmentList: EnrolledAssessment[] = []
-      for (const assessment of assessmentsData) {
-        const { data: resultsData } = await supabase
-          .from('assessment_results')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('assessment_id', assessment.id)
-
-        const { data: courseData } = await supabase
-          .from('courses')
-          .select('title')
-          .eq('id', assessment.course_id)
-          .single()
-
-        const passedCount = resultsData?.filter((r) => r.passed).length || 0
-        const bestScore = resultsData?.length
-          ? Math.max(...resultsData.map((r) => r.score))
-          : 0
-
-        assessmentList.push({
-          id: assessment.id,
-          assessment_id: assessment.id,
-          title: assessment.title,
-          course_id: assessment.course_id,
-          course_title: courseData?.title || 'Unknown Course',
-          passed_count: passedCount,
-          total_attempts: resultsData?.length || 0,
-          best_score: bestScore,
-          last_attempt: resultsData?.[resultsData.length - 1]?.completed_at || null,
-          is_completed: passedCount > 0,
-        })
-      }
-
-      setAssessments(assessmentList)
+      const data = await response.json()
+      setAssessments((data.assessments || []) as EnrolledAssessment[])
       setIsLoading(false)
     }
 

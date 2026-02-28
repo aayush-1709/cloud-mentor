@@ -1,0 +1,12 @@
+Section folder: 01-cloud-foundations
+
+Add your videos with these exact filenames:
+- 01-what-is-cloud-computing.mp4
+- 02-aws-global-infrastructure.mp4
+- 03-shared-responsibility-model.mp4
+- 04-well-architected-framework.mp4
+- 05-aws-pricing-and-support-plans.mp4
+
+Notes:
+- Keep numbering (01, 02, 03...) for automatic ordering.
+- Supported formats: .mp4, .webm, .ogg, .mov

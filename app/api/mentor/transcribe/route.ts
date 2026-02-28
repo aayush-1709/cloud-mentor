@@ -1,4 +1,5 @@
 import { generateText } from 'ai'
+import { google } from '@ai-sdk/google'
 
 export async function POST(req: Request) {
   try {
@@ -13,14 +14,14 @@ export async function POST(req: Request) {
     const arrayBuffer = await audioBlob.arrayBuffer()
     const base64Audio = Buffer.from(arrayBuffer).toString('base64')
 
-    // Use Vercel AI SDK to transcribe using OpenAI's Whisper model
+    // Use Gemini as a lightweight fallback for transcription simulation
     const result = await generateText({
-      model: 'openai/gpt-4-turbo', // Using GPT-4 as fallback for transcription simulation
-      prompt: `You are a transcription assistant. The following is a base64 encoded audio file that needs to be transcribed. In a real scenario, this would use Whisper API. For now, return a simulated transcription based on the request: ${base64Audio.substring(0, 100)}...`,
+      model: google('gemini-2.0-flash'),
+      prompt: `You are a transcription assistant. The following is a base64 encoded audio file that needs to be transcribed. Return a short, clean transcription-style sentence only. Audio sample: ${base64Audio.substring(0, 100)}...`,
       temperature: 0.3,
     })
 
-    // For production, you would integrate with OpenAI's Whisper API directly
+    // For production, replace this with a real speech-to-text provider integration
     // For now, we're returning a placeholder that will work with the UI
     const transcribedText = result.text || 'What is AWS EC2?'
 

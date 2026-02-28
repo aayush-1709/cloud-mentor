@@ -1,5 +1,5 @@
 import { streamText } from 'ai'
-import { createClient } from '@/lib/supabase/server'
+import { google } from '@ai-sdk/google'
 
 const AWS_MENTOR_SYSTEM_PROMPT = `You are CloudMentor AI, an expert AWS (Amazon Web Services) mentor and instructor. Your role is to:
 
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     const { messages } = await request.json()
 
     const result = streamText({
-      model: 'openai/gpt-4o-mini',
+      model: google('gemini-2.0-flash'),
       system: AWS_MENTOR_SYSTEM_PROMPT,
       messages: messages || [],
     })

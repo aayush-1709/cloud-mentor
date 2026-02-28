@@ -1,0 +1,13 @@
+Section folder: 08-monitoring-security
+
+Add your videos with these exact filenames:
+- 01-cloudwatch.mp4
+- 02-cloudtrail.mp4
+- 03-aws-config.mp4
+- 04-kms.mp4
+- 05-waf.mp4
+- 06-shield.mp4
+
+Notes:
+- Keep numbering (01, 02, 03...) for automatic ordering.
+- Supported formats: .mp4, .webm, .ogg, .mov

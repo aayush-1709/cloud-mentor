@@ -1,0 +1,13 @@
+Section folder: 07-serverless-integration
+
+Add your videos with these exact filenames:
+- 01-lambda.mp4
+- 02-api-gateway.mp4
+- 03-sqs.mp4
+- 04-sns.mp4
+- 05-eventbridge.mp4
+- 06-step-functions.mp4
+
+Notes:
+- Keep numbering (01, 02, 03...) for automatic ordering.
+- Supported formats: .mp4, .webm, .ogg, .mov

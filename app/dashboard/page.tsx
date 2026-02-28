@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 import { useEffect, useState } from 'react'
 import { BookOpen, Award, Sparkles, Users } from 'lucide-react'
 
@@ -24,43 +23,11 @@ export default function DashboardHome() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) return
-
-      // Get user's name from metadata or profile
-      const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
-      setUserName(fullName)
-
-      // Fetch user's progress
-      const { data: progress } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-
-      // Fetch assessment results
-      const { data: results } = await supabase
-        .from('assessment_results')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('passed', true)
-
-      // Fetch gamification stats
-      const { data: gamification } = await supabase
-        .from('gamification_stats')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      setStats({
-        coursesEnrolled: progress?.length || 0,
-        assessmentsPassed: results?.length || 0,
-        pointsEarned: gamification?.total_points || 0,
-        currentStreak: gamification?.current_streak || 0,
-      })
+      const response = await fetch('/api/dashboard/summary')
+      if (!response.ok) return
+      const data = await response.json()
+      setUserName(data.userName ?? 'Learner')
+      setStats(data.stats)
     }
 
     fetchStats()

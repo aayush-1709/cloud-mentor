@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Users, Plus, Mail, Copy, Check, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import type { CollaborationRoom } from '@/lib/types/database'
 import {
   Dialog,
@@ -33,44 +32,14 @@ export default function CollaborationPage() {
   }, [])
 
   const fetchRooms = async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return
-
     try {
-      // First, get all rooms created by this user
-      const { data: createdRooms } = await supabase
-        .from('collaboration_rooms')
-        .select('*')
-        .eq('created_by', user.id)
-        .order('created_at', { ascending: false })
-
-      // Then, get rooms where user is a session participant
-      const { data: userSessions } = await supabase
-        .from('collaboration_sessions')
-        .select('room_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-
-      let joinedRooms: CollaborationRoom[] = []
-      if (userSessions && userSessions.length > 0) {
-        const roomIds = userSessions.map((s: any) => s.room_id)
-        const { data: rooms } = await supabase
-          .from('collaboration_rooms')
-          .select('*')
-          .in('id', roomIds)
-          .order('created_at', { ascending: false })
-        joinedRooms = (rooms as CollaborationRoom[]) || []
+      const response = await fetch('/api/collaboration/rooms')
+      if (!response.ok) {
+        setRooms([])
+      } else {
+        const data = await response.json()
+        setRooms((data.rooms || []) as CollaborationRoom[])
       }
-
-      // Merge and deduplicate
-      const allRooms = [...(createdRooms || []), ...joinedRooms]
-      const uniqueRooms = Array.from(new Map(allRooms.map((room: any) => [room.id, room])).values())
-
-      setRooms(uniqueRooms)
     } catch (error) {
       console.error('Error fetching rooms:', error)
       setRooms([])
@@ -86,54 +55,25 @@ export default function CollaborationPage() {
 
     setIsCreating(true)
     setCreateError('')
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) {
-      setCreateError('You must be logged in to create a study group')
-      setIsCreating(false)
-      return
-    }
 
     try {
-      // Create the room using the correct schema columns
-      const { data: roomData, error: roomError } = await supabase
-        .from('collaboration_rooms')
-        .insert({
+      const response = await fetch('/api/collaboration/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           title: newRoomName,
           topic: 'AWS Study Group',
-          created_by: user.id,
-          is_active: true,
-        })
-        .select()
-        .single()
-
-      if (roomError || !roomData) {
-        console.error('Error creating room:', roomError)
-        setCreateError(roomError?.message || 'Failed to create study group')
+        }),
+      })
+      if (!response.ok) {
+        const errorData = await response.json()
+        setCreateError(errorData.error || 'Failed to create study group')
         return
       }
-
-      // Add the user as a session participant
-      const { error: sessionError } = await supabase
-        .from('collaboration_sessions')
-        .insert({
-          room_id: roomData.id,
-          user_id: user.id,
-          is_active: true,
-        })
-
-      if (!sessionError) {
-        setNewRoomName('')
-        setShowCreateDialog(false)
-        setCreateError('')
-        await fetchRooms()
-      } else {
-        console.error('Error creating session:', sessionError)
-        setCreateError('Room created but failed to join. Please try again.')
-      }
+      setNewRoomName('')
+      setShowCreateDialog(false)
+      setCreateError('')
+      await fetchRooms()
     } catch (error) {
       console.error('Error in handleCreateRoom:', error)
       setCreateError('An unexpected error occurred. Please try again.')
@@ -144,27 +84,12 @@ export default function CollaborationPage() {
 
   const handleInviteByEmail = async () => {
     if (!inviteEmail.trim() || !selectedRoom) return
-
-    const supabase = createClient()
-
-    // In a real app, you'd send an email here
-    // For now, we'll just add a member if they exist
-    const { data: invitedUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', inviteEmail)
-      .single()
-
-    if (invitedUser) {
-      // Add to members - in production, would send actual email
-      const currentMembers = selectedRoom.members || []
-      const newMembers = [...currentMembers, { user_id: invitedUser.id, joined_at: new Date().toISOString() }]
-
-      await supabase
-        .from('collaboration_rooms')
-        .update({ members: newMembers })
-        .eq('id', selectedRoom.id)
-
+    const response = await fetch(`/api/collaboration/rooms/${selectedRoom.id}/invite`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inviteEmail }),
+    })
+    if (response.ok) {
       setInviteEmail('')
       await fetchRooms()
     }

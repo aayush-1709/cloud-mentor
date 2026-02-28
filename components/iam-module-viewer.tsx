@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronRight, Lock, BookOpen, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 
 interface SubModule {
@@ -25,26 +24,23 @@ export function IAMModuleViewer({ courseId }: { courseId: string }) {
 
   useEffect(() => {
     const fetchIAMModule = async () => {
-      const supabase = createClient()
+      const response = await fetch(`/api/courses/${courseId}`)
+      if (!response.ok) {
+        setIsLoading(false)
+        return
+      }
+      const data = await response.json()
+      const lessons = data.lessons || []
 
-      // Fetch the main IAM module
-      const { data: mainData } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('course_id', courseId)
-        .eq('title', 'AWS Identity and Access Management (IAM)')
-        .single()
+      const mainData = lessons.find(
+        (lesson: any) =>
+          lesson.title === 'Identity and Access Management (IAM)' ||
+          lesson.title === 'AWS Identity and Access Management (IAM)',
+      )
 
       if (mainData) {
         setMainModule(mainData)
-
-        // Fetch all submodules for this main module
-        const { data: subData } = await supabase
-          .from('lessons')
-          .select('*')
-          .eq('parent_lesson_id', mainData.id)
-          .order('order_index', { ascending: true })
-
+        const subData = lessons.filter((lesson: any) => lesson.parent_lesson_id === mainData.id)
         setSubModules((subData as SubModule[]) || [])
       }
 

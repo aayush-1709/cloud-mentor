@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BookOpen, Loader2 } from 'lucide-react'
 import type { Course } from '@/lib/types/database'
@@ -17,55 +16,15 @@ export default function CoursesPage() {
 
   useEffect(() => {
     const fetchCourses = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      let query = supabase.from('courses').select('*')
-
-      if (filter !== 'all') {
-        query = query.eq('level', filter)
+      const url = filter === 'all' ? '/api/courses' : `/api/courses?level=${filter}`
+      const response = await fetch(url)
+      if (!response.ok) {
+        setIsLoading(false)
+        return
       }
-
-      const { data, error } = await query.order('created_at', { ascending: false })
-
-      if (!error && data) {
-        // Fetch lesson duration for each course
-        const coursesWithDuration = await Promise.all(
-          (data as Course[]).map(async (course) => {
-            const { data: lessonsData } = await supabase
-              .from('lessons')
-              .select('estimated_duration')
-              .eq('course_id', course.id)
-
-            const totalMinutes = lessonsData?.reduce((sum, lesson) => sum + (lesson.estimated_duration || 0), 0) || 0
-            const totalHours = Math.ceil(totalMinutes / 60)
-            const lessonCount = lessonsData?.length || 0
-
-            return {
-              ...course,
-              lessonCount,
-              estimatedHours: totalHours,
-            }
-          })
-        )
-
-        setCourses(coursesWithDuration)
-      }
-
-      // Fetch user's enrolled courses
-      if (user) {
-        const { data: progressData } = await supabase
-          .from('user_progress')
-          .select('course_id')
-          .eq('user_id', user.id)
-
-        if (progressData) {
-          setEnrolledCourses(new Set(progressData.map((p: any) => p.course_id)))
-        }
-      }
-
+      const data = await response.json()
+      setCourses((data.courses || []) as Course[])
+      setEnrolledCourses(new Set(data.enrolledCourseIds || []))
       setIsLoading(false)
     }
 
@@ -76,28 +35,18 @@ export default function CoursesPage() {
     setEnrollingCourses(prev => new Set(prev).add(courseId))
     
     try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        console.error('User not authenticated')
-        return
-      }
-
-      // Create user progress record for this course
-      const { error } = await supabase.from('user_progress').insert({
-        user_id: user.id,
-        course_id: courseId,
-        status: 'in_progress',
-        completion_percentage: 0,
+      const response = await fetch('/api/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId,
+        }),
       })
 
-      if (!error) {
+      if (response.ok) {
         setEnrolledCourses(prev => new Set(prev).add(courseId))
       } else {
-        console.error('Enrollment error:', error)
+        console.error('Enrollment error')
       }
     } catch (error) {
       console.error('Error enrolling in course:', error)
@@ -170,8 +119,8 @@ export default function CoursesPage() {
                     {course.level}
                   </span>
                   <div className="text-xs text-muted-foreground text-right space-y-1">
-                    <div>{(course as any).estimatedHours ? `${(course as any).estimatedHours} hours` : 'TBD'}</div>
-                    <div>{(course as any).lessonCount ? `${(course as any).lessonCount} modules` : 'No modules'}</div>
+                    <div>{course.estimated_duration_hours ? `${course.estimated_duration_hours} hours` : 'TBD'}</div>
+                    <div>{course.total_lessons ? `${course.total_lessons} modules` : 'No modules'}</div>
                   </div>
                 </div>
                 <CardTitle className="line-clamp-2">{course.title}</CardTitle>

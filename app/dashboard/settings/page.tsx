@@ -5,26 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Settings } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState } from 'react'
+import { DEMO_USER_EMAIL, DEMO_USER_NAME } from '@/lib/demo-user'
 
 export default function SettingsPage() {
-  const [user, setUser] = useState<any>(null)
-  const [email, setEmail] = useState('')
-
-  useEffect(() => {
-    const getUser = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (user) {
-        setUser(user)
-        setEmail(user.email || '')
-      }
-    }
-    getUser()
-  }, [])
+  const [fullName, setFullName] = useState(DEMO_USER_NAME)
 
   return (
     <div className="space-y-6">
@@ -49,7 +34,7 @@ export default function SettingsPage() {
           <div className="space-y-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} disabled />
+              <Input id="email" type="email" value={DEMO_USER_EMAIL} disabled />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="fullName">Full Name</Label>
@@ -57,7 +42,8 @@ export default function SettingsPage() {
                 id="fullName"
                 type="text"
                 placeholder="Your full name"
-                defaultValue={user?.user_metadata?.full_name || ''}
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
               />
             </div>
             <Button>Save Changes</Button>

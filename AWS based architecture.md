@@ -69,8 +69,8 @@ CloudMentor AI leverages a modern serverless-first AWS architecture to deliver a
 | **AWS KMS** | Encryption key management — encrypts data at rest in Aurora, S3, and DynamoDB |
 
 ### How it maps to CloudMentor:
-- **Cognito User Pools** replace Supabase Auth for production-grade auth with MFA support
-- **Cognito Identity Pools** provide temporary AWS credentials for direct S3 access from the client
+- This prototype currently runs as **public access** (no login required)
+- If auth is added later, **Cognito User Pools** can provide production-grade auth with MFA support
 - IAM roles enforce **least privilege** — each Lambda has only the permissions it needs
 
 ---
@@ -276,9 +276,9 @@ AWS CodePipeline
 
 | Current (Dev) | AWS (Production) |
 |---|---|
-| Supabase Auth | Amazon Cognito |
-| Supabase PostgreSQL | Amazon Aurora PostgreSQL |
-| Supabase Realtime | DynamoDB Streams + AppSync |
+| Public demo (no auth) | Amazon Cognito (optional if auth is added) |
+| Direct PostgreSQL (`pg`) | Amazon Aurora PostgreSQL / RDS PostgreSQL |
+| App API routes | API Gateway + Lambda / ECS |
 | Vercel Hosting | AWS Amplify Hosting |
 | OpenAI API | Amazon Bedrock |
 | Vercel AI SDK | AWS SDK + Bedrock Runtime |

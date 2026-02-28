@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
@@ -24,37 +23,17 @@ export default function LessonDetailPage() {
 
   useEffect(() => {
     const fetchLessonData = async () => {
-      const supabase = createClient()
-
-      // Fetch course
-      const { data: courseData } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', courseId)
-        .single()
-
-      if (courseData) {
-        setCourse(courseData as Course)
-
-        // Fetch all lessons
-        const { data: lessonsData } = await supabase
-          .from('lessons')
-          .select('*')
-          .eq('course_id', courseId)
-          .order('order', { ascending: true })
-
-        if (lessonsData) {
-          setLessons(lessonsData as Lesson[])
-
-          // Fetch current lesson
-          const currentLesson = lessonsData.find((l) => l.id === lessonId)
-          if (currentLesson) {
-            setLesson(currentLesson as Lesson)
-            setCurrentLessonIndex(lessonsData.findIndex((l) => l.id === lessonId))
-          }
-        }
+      const response = await fetch(`/api/courses/${courseId}/lessons/${lessonId}`)
+      if (!response.ok) {
+        setIsLoading(false)
+        return
       }
-
+      const data = await response.json()
+      setCourse(data.course as Course)
+      setLessons((data.lessons || []) as Lesson[])
+      setLesson(data.lesson as Lesson)
+      setCurrentLessonIndex((data.lessons || []).findIndex((l: Lesson) => l.id === lessonId))
+      setIsMarkedComplete(Boolean(data.isMarkedComplete))
       setIsLoading(false)
     }
 
@@ -62,44 +41,13 @@ export default function LessonDetailPage() {
   }, [courseId, lessonId])
 
   const handleMarkComplete = async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return
-
-    // Get current progress
-    const { data: progressData } = await supabase
-      .from('user_progress')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('course_id', courseId)
-      .single()
-
-    if (progressData) {
-      const completedCount = isMarkedComplete
-        ? (progressData.lessons_completed || 1) - 1
-        : (progressData.lessons_completed || 0) + 1
-
-      const progressPercentage = Math.round(
-        (completedCount / (progressData.total_lessons || 1)) * 100
-      )
-
-      const { error } = await supabase
-        .from('user_progress')
-        .update({
-          lessons_completed: completedCount,
-          progress_percentage: progressPercentage,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id)
-        .eq('course_id', courseId)
-
-      if (!error) {
-        setIsMarkedComplete(!isMarkedComplete)
-      }
-    }
+    const response = await fetch(`/api/courses/${courseId}/lessons/${lessonId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ markComplete: !isMarkedComplete }),
+    })
+    if (!response.ok) return
+    setIsMarkedComplete(!isMarkedComplete)
   }
 
   const goToNextLesson = () => {

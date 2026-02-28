@@ -2,13 +2,13 @@
 
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, BookOpen, Clock, Award } from 'lucide-react'
 import type { Course, Lesson } from '@/lib/types/database'
 import Link from 'next/link'
 import { IAMModuleViewer } from '@/components/iam-module-viewer'
+import { SAARoadmapViewer } from '@/components/saa-roadmap-viewer'
 
 export default function CourseDetailPage() {
   const params = useParams()
@@ -20,46 +20,15 @@ export default function CourseDetailPage() {
 
   useEffect(() => {
     const fetchCourseData = async () => {
-      const supabase = createClient()
-
-      // Fetch course
-      const { data: courseData } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', courseId)
-        .single()
-
-      if (courseData) {
-        setCourse(courseData as Course)
-
-        // Fetch lessons
-        const { data: lessonsData } = await supabase
-          .from('lessons')
-          .select('*')
-          .eq('course_id', courseId)
-          .order('order', { ascending: true })
-
-        if (lessonsData) {
-          setLessons(lessonsData as Lesson[])
-        }
-
-        // Check if user is enrolled
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-
-        if (user) {
-          const { data: progressData } = await supabase
-            .from('user_progress')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('course_id', courseId)
-            .single()
-
-          setIsEnrolled(!!progressData)
-        }
+      const response = await fetch(`/api/courses/${courseId}`)
+      if (!response.ok) {
+        setIsLoading(false)
+        return
       }
-
+      const data = await response.json()
+      setCourse(data.course as Course)
+      setLessons((data.lessons || []) as Lesson[])
+      setIsEnrolled(Boolean(data.isEnrolled))
       setIsLoading(false)
     }
 
@@ -67,22 +36,13 @@ export default function CourseDetailPage() {
   }, [courseId])
 
   const handleEnroll = async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (!user) return
-
-    const { error } = await supabase.from('user_progress').insert({
-      user_id: user.id,
-      course_id: courseId,
-      lessons_completed: 0,
-      total_lessons: course?.total_lessons || 0,
-      progress_percentage: 0,
+    const response = await fetch('/api/courses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ courseId }),
     })
 
-    if (!error) {
+    if (response.ok) {
       setIsEnrolled(true)
     }
   }
@@ -102,6 +62,10 @@ export default function CourseDetailPage() {
       </div>
     )
   }
+
+  const isSaaAssociateCourse = course.title
+    .toLowerCase()
+    .includes('solutions architect - associate')
 
   return (
     <div className="space-y-6">
@@ -179,59 +143,63 @@ export default function CourseDetailPage() {
         </div>
       )}
 
-      {/* Lessons Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Course Lessons</CardTitle>
-          <CardDescription>
-            Complete lessons to master this course
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {lessons.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No lessons available yet
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {lessons.map((lesson) => (
-                <div
-                  key={lesson.id}
-                  className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-medium">
-                          {lesson.order}
-                        </span>
-                        <h3 className="font-medium group-hover:text-primary transition-colors">
-                          {lesson.title}
-                        </h3>
+      {/* SAA Associate: Roadmap-based video view only */}
+      {isSaaAssociateCourse ? (
+        <SAARoadmapViewer />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>Course Lessons</CardTitle>
+            <CardDescription>
+              Complete lessons to master this course
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {lessons.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                No lessons available yet
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {lessons.map((lesson) => (
+                  <div
+                    key={lesson.id}
+                    className="p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+                            {lesson.order_index}
+                          </span>
+                          <h3 className="font-medium group-hover:text-primary transition-colors">
+                            {lesson.title}
+                          </h3>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1 ml-8">
+                          {lesson.content?.substring(0, 100)}...
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1 ml-8">
-                        {lesson.content?.substring(0, 100)}...
-                      </p>
+                      {isEnrolled && (
+                        <Button
+                          asChild
+                          variant="ghost"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Link href={`/dashboard/courses/${courseId}/lessons/${lesson.id}`}>
+                            Learn
+                          </Link>
+                        </Button>
+                      )}
                     </div>
-                    {isEnrolled && (
-                      <Button
-                        asChild
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Link href={`/dashboard/courses/${courseId}/lessons/${lesson.id}`}>
-                          Learn
-                        </Link>
-                      </Button>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -3,7 +3,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Award, TrendingUp, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import type { UserProgress, AssessmentResult, GamificationStats } from '@/lib/types/database'
 import {
   BarChart,
@@ -37,31 +36,15 @@ export default function ProgressPage() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) return
-
-      // Fetch user's progress
-      const { data: progressData } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-
-      // Fetch assessment results
-      const { data: assessmentData } = await supabase
-        .from('assessment_results')
-        .select('*')
-        .eq('user_id', user.id)
-
-      // Fetch gamification stats
-      const { data: gamificationData } = await supabase
-        .from('gamification_stats')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
+      const response = await fetch('/api/progress')
+      if (!response.ok) {
+        setIsLoading(false)
+        return
+      }
+      const data = await response.json()
+      const progressData = (data.courses || []) as UserProgress[]
+      const assessmentData = (data.assessments || []) as AssessmentResult[]
+      const gamificationData = (data.gamification ?? null) as GamificationStats | null
 
       const totalLessons = progressData?.reduce((sum, p) => sum + (p.lessons_completed || 0), 0) || 0
       const avgScore = assessmentData?.length
@@ -69,9 +52,9 @@ export default function ProgressPage() {
         : 0
 
       setStats({
-        courses: (progressData || []) as UserProgress[],
-        assessments: (assessmentData || []) as AssessmentResult[],
-        gamification: gamificationData as GamificationStats | null,
+        courses: progressData,
+        assessments: assessmentData,
+        gamification: gamificationData,
         totalLessonsCompleted: totalLessons,
         averageScore: avgScore,
       })

@@ -1,16 +1,15 @@
 'use client'
 
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
+import { DEMO_USER_EMAIL } from '@/lib/demo-user'
 import {
   BookOpen,
   BarChart3,
   Settings,
-  LogOut,
   Menu,
   X,
   Award,
@@ -64,11 +63,8 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
-  const [user, setUser] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMounted, setIsMounted] = useState(false)
 
@@ -76,55 +72,28 @@ export default function DashboardLayout({
     setIsMounted(true)
   }, [])
 
-  useEffect(() => {
-    const getUser = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
-
-      setUser(user)
-      setIsLoading(false)
-    }
-
-    if (isMounted) {
-      getUser()
-    }
-  }, [router, isMounted])
-
-  const handleLogout = async () => {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/auth/login')
-  }
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    )
-  }
-
   return (
-    <div className="flex min-h-svh bg-background">
+    <div className="h-screen overflow-hidden bg-background">
+      {isSidebarOpen && (
+        <button
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+          aria-label="Close sidebar overlay"
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`${
-          isSidebarOpen ? 'w-64' : 'w-0'
-        } border-r border-border bg-card transition-all duration-200 overflow-hidden flex flex-col`}
+        className={`fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card shadow-lg transition-transform duration-200 ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } lg:translate-x-0 flex flex-col`}
       >
         <div className="p-6 border-b border-border">
           <h1 className="text-xl font-bold text-primary">CloudMentor</h1>
           <p className="text-xs text-muted-foreground mt-1">AWS Mastery Platform</p>
         </div>
 
-        <nav className="flex-1 p-4 overflow-y-auto">
+        <nav className="flex-1 p-4">
           <ul className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon
@@ -151,10 +120,10 @@ export default function DashboardLayout({
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-border space-y-3">
+        <div className="mt-auto p-4 border-t border-border space-y-3">
           <div className="bg-muted rounded-lg p-4">
             <p className="text-sm font-medium">
-              {user?.email}
+              {DEMO_USER_EMAIL}
             </p>
           </div>
           {isMounted && (
@@ -176,19 +145,12 @@ export default function DashboardLayout({
               )}
             </Button>
           )}
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            className="w-full justify-start gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </Button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="ml-0 h-screen overflow-y-auto lg:ml-64">
+        <div className="flex min-h-screen flex-col">
         {/* Top Bar */}
         <header className="border-b border-border bg-card sticky top-0 z-10">
           <div className="flex items-center justify-between px-6 py-4">
@@ -213,16 +175,17 @@ export default function DashboardLayout({
 
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground hidden md:inline">
-                {user?.email}
+                {DEMO_USER_EMAIL}
               </span>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 p-6">
           {children}
         </main>
+        </div>
       </div>
     </div>
   )

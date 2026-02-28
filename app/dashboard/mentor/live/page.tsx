@@ -17,7 +17,6 @@ import {
   Loader2,
 } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/badge'
 
 interface MentorSession {

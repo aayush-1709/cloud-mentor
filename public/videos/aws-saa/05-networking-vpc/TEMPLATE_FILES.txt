@@ -1,0 +1,14 @@
+Section folder: 05-networking-vpc
+
+Add your videos with these exact filenames:
+- 01-vpc-basics.mp4
+- 02-subnets-public-vs-private.mp4
+- 03-route-tables.mp4
+- 04-internet-gateway-nat-gateway.mp4
+- 05-security-groups-vs-nacl.mp4
+- 06-vpc-peering.mp4
+- 07-transit-gateway.mp4
+
+Notes:
+- Keep numbering (01, 02, 03...) for automatic ordering.
+- Supported formats: .mp4, .webm, .ogg, .mov

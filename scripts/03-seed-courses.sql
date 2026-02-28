@@ -1,12 +1,12 @@
 -- Seed sample AWS certification courses
 -- Practitioner Level
-INSERT INTO courses (title, description, topic, level)
+INSERT INTO courses (title, description, category, level)
 VALUES
   ('AWS Certified Cloud Practitioner', 'Foundational AWS certification covering core cloud concepts, services, and best practices. Perfect for beginners.', 'AWS Fundamentals', 'practitioner'),
   ('AWS Certified AI Practitioner', 'Get started with AI and machine learning on AWS. Learn core AI/ML concepts and AWS AI services.', 'Artificial Intelligence', 'practitioner');
 
 -- Associate Level
-INSERT INTO courses (title, description, topic, level)
+INSERT INTO courses (title, description, category, level)
 VALUES
   ('AWS Certified Solutions Architect - Associate', 'Design secure, scalable, and cost-effective applications on AWS. Essential for solution architects.', 'Architecture', 'associate'),
   ('AWS Certified Developer - Associate', 'Master AWS development practices. Learn to build, deploy, and debug cloud applications.', 'Development', 'associate'),
@@ -15,7 +15,7 @@ VALUES
   ('AWS Certified CloudOps Engineer - Associate', 'Manage and automate AWS infrastructure. Learn deployment automation and monitoring.', 'Operations', 'associate');
 
 -- Advanced Level (Professional & Specialty)
-INSERT INTO courses (title, description, topic, level)
+INSERT INTO courses (title, description, category, level)
 VALUES
   ('AWS Certified Solutions Architect - Professional', 'Advanced AWS architecture design. Design complex, multi-account, global-scale applications.', 'Architecture', 'advanced'),
   ('AWS Certified DevOps Engineer - Professional', 'Master DevOps on AWS. CI/CD, infrastructure as code, monitoring, and automation at scale.', 'DevOps', 'advanced'),

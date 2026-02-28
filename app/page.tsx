@@ -2,36 +2,15 @@
 
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { Loader2, BookOpen, Sparkles, Award } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function Page() {
-  const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
-  const [userName, setUserName] = useState<string | null>(null)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (user) {
-        // Get user's full name from metadata or email
-        const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
-        setUserName(fullName)
-        router.push('/dashboard')
-      } else {
-        setIsLoading(false)
-      }
-    }
-
-    checkAuth()
-  }, [router])
+    setIsLoading(false)
+  }, [])
 
   if (isLoading) {
     return (
@@ -51,11 +30,8 @@ export default function Page() {
             <p className="text-xs text-muted-foreground">AWS Mastery Platform</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/auth/login">Sign in</Link>
-            </Button>
             <Button asChild>
-              <Link href="/auth/sign-up">Get started</Link>
+              <Link href="/dashboard">Open Demo</Link>
             </Button>
           </div>
         </div>
@@ -72,10 +48,7 @@ export default function Page() {
           </p>
           <div className="flex gap-3 justify-center pt-4">
             <Button size="lg" asChild>
-              <Link href="/auth/sign-up">Start Learning Free</Link>
-            </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/auth/login">Sign In</Link>
+              <Link href="/dashboard">Launch Public Demo</Link>
             </Button>
           </div>
         </div>
@@ -125,7 +98,7 @@ export default function Page() {
             Join thousands of professionals learning and mastering AWS technologies
           </p>
           <Button size="lg" variant="secondary" asChild>
-            <Link href="/auth/sign-up">Start Your Free Learning Journey</Link>
+            <Link href="/dashboard">Enter Dashboard</Link>
           </Button>
         </div>
       </section>

@@ -2,7 +2,6 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, AlertCircle } from 'lucide-react'
@@ -27,46 +26,14 @@ export default function AssessmentPage() {
 
   useEffect(() => {
     const fetchAssessmentData = async () => {
-      const supabase = createClient()
-
-      // Fetch assessment
-      const { data: assessmentData } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('id', assessmentId)
-        .single()
-
-      if (assessmentData) {
-        setAssessment(assessmentData as Assessment)
-
-        // Fetch questions
-        const { data: questionsData } = await supabase
-          .from('quiz_questions')
-          .select('*')
-          .eq('assessment_id', assessmentId)
-          .order('order', { ascending: true })
-
-        if (questionsData) {
-          // Fetch options for each question
-          const questionsWithOptions = await Promise.all(
-            questionsData.map(async (q) => {
-              const { data: optionsData } = await supabase
-                .from('quiz_options')
-                .select('*')
-                .eq('question_id', q.id)
-                .order('order', { ascending: true })
-
-              return {
-                ...q,
-                options: (optionsData || []) as QuizOption[],
-              }
-            })
-          )
-
-          setQuestions(questionsWithOptions as QuestionWithOptions[])
-        }
+      const response = await fetch(`/api/assessments/${assessmentId}`)
+      if (!response.ok) {
+        setIsLoading(false)
+        return
       }
-
+      const data = await response.json()
+      setAssessment(data.assessment as Assessment)
+      setQuestions((data.questions || []) as QuestionWithOptions[])
       setIsLoading(false)
     }
 
@@ -110,19 +77,16 @@ export default function AssessmentPage() {
     setShowResults(true)
 
     // Save result to database
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-
-    if (user && assessment) {
-      await supabase.from('assessment_results').insert({
-        user_id: user.id,
-        assessment_id: assessmentId,
-        score: calculatedScore,
-        total_points: 100,
-        passed: calculatedScore >= (assessment.passing_score || 70),
-        time_spent_minutes: 0,
+    if (assessment) {
+      await fetch(`/api/assessments/${assessmentId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          score: calculatedScore,
+          totalPoints: 100,
+          passed: calculatedScore >= (assessment.passing_score || 70),
+          timeSpentMinutes: 0,
+        }),
       })
     }
   }

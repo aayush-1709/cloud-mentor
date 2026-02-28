@@ -1,11 +1,9 @@
 export interface User {
   id: string
   email: string
-  full_name: string
+  name: string
   created_at: string
   updated_at: string
-  user_type: 'student' | 'instructor' | 'admin'
-  is_active: boolean
 }
 
 export interface Course {
@@ -27,9 +25,12 @@ export interface Lesson {
   course_id: string
   title: string
   content: string
-  order: number
+  order_index: number
+  estimated_duration: number
+  objectives?: string[]
   video_url?: string
   resources?: string[]
+  parent_lesson_id?: string | null
   created_at: string
   updated_at: string
 }
@@ -50,7 +51,7 @@ export interface QuizQuestion {
   assessment_id: string
   question_text: string
   question_type: 'multiple_choice' | 'short_answer' | 'code'
-  order: number
+  order_index: number
   created_at: string
 }
 
@@ -59,7 +60,7 @@ export interface QuizOption {
   question_id: string
   option_text: string
   is_correct: boolean
-  order: number
+  order_index: number
 }
 
 export interface UserProgress {
@@ -68,8 +69,9 @@ export interface UserProgress {
   course_id: string
   lessons_completed: number
   total_lessons: number
-  last_accessed_at: string
   progress_percentage: number
+  status?: 'not_started' | 'in_progress' | 'completed'
+  completed_lesson_ids?: string[]
   created_at: string
   updated_at: string
 }
@@ -113,9 +115,10 @@ export interface AISession {
 export interface CollaborationRoom {
   id: string
   title: string
-  description: string
+  topic: string
   created_by: string
   max_participants: number
+  members?: Array<{ user_id: string; joined_at: string; email?: string }>
   created_at: string
   updated_at: string
   is_active: boolean
