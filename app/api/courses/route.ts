@@ -82,3 +82,24 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to enroll in course' }, { status: 500 })
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const body = (await request.json()) as { courseId?: string }
+    if (!body.courseId) {
+      return NextResponse.json({ error: 'courseId is required' }, { status: 400 })
+    }
+
+    // Remove per-course progress/enrollment records for this learner.
+    await query('DELETE FROM lesson_progress WHERE user_id = $1 AND course_id = $2', [DEMO_USER_ID, body.courseId])
+    const removed = await query<{ id: string }>(
+      'DELETE FROM user_progress WHERE user_id = $1 AND course_id = $2 RETURNING id',
+      [DEMO_USER_ID, body.courseId],
+    )
+
+    return NextResponse.json({ ok: true, removed: Boolean(removed[0]) })
+  } catch (error) {
+    console.error('DELETE /api/courses failed:', error)
+    return NextResponse.json({ error: 'Failed to de-enroll from course' }, { status: 500 })
+  }
+}

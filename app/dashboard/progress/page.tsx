@@ -34,6 +34,8 @@ type MockAttempt = {
 }
 type MockAttemptsStore = Record<string, MockAttempt[]>
 const MOCK_ATTEMPTS_STORAGE_KEY = 'cloudmentor-mock-attempts'
+const SAA_COMPLETION_STORAGE_KEY = 'cloudmentor-saa-completed'
+const SAA_TOTAL_LESSONS = 51
 
 interface ProgressStats {
   courses: CourseProgress[]
@@ -80,13 +82,42 @@ export default function ProgressPage() {
       const assessmentData = (data.assessments || []) as AssessmentResult[]
       const gamificationData = (data.gamification ?? null) as GamificationStats | null
 
-      const totalLessons = progressData?.reduce((sum, p) => sum + (p.lessons_completed || 0), 0) || 0
+      const completedSaaIds = (() => {
+        try {
+          const raw = localStorage.getItem(SAA_COMPLETION_STORAGE_KEY)
+          return raw ? (JSON.parse(raw) as string[]) : []
+        } catch {
+          return []
+        }
+      })()
+
+      const normalizedProgressData = progressData.map((course) => {
+        const title = course.course_title.toLowerCase()
+        const isSaaAssociate =
+          title.includes('solutions architect') && title.includes('associate')
+
+        if (!isSaaAssociate) return course
+
+        const liveCompleted = completedSaaIds.length
+        const liveTotal = Math.max(course.total_lessons || 0, SAA_TOTAL_LESSONS)
+        const livePercentage = liveTotal > 0 ? Math.round((liveCompleted / liveTotal) * 100) : 0
+
+        return {
+          ...course,
+          lessons_completed: liveCompleted,
+          total_lessons: liveTotal,
+          progress_percentage: livePercentage,
+        }
+      })
+
+      const totalLessons =
+        normalizedProgressData?.reduce((sum, p) => sum + (p.lessons_completed || 0), 0) || 0
       const avgScore = assessmentData?.length
         ? Math.round(assessmentData.reduce((sum, a) => sum + a.score, 0) / assessmentData.length)
         : 0
 
       setStats({
-        courses: progressData,
+        courses: normalizedProgressData,
         assessments: assessmentData,
         gamification: gamificationData,
         totalLessonsCompleted: totalLessons,
@@ -121,9 +152,10 @@ export default function ProgressPage() {
       const averageMockScore = attemptedScores.length
         ? Math.round(attemptedScores.reduce((sum, score) => sum + score, 0) / attemptedScores.length)
         : 0
-      const averageCourseProgress = progressData.length
+      const averageCourseProgress = normalizedProgressData.length
         ? Math.round(
-            progressData.reduce((sum, course) => sum + (course.progress_percentage || 0), 0) / progressData.length,
+            normalizedProgressData.reduce((sum, course) => sum + (course.progress_percentage || 0), 0) /
+              normalizedProgressData.length,
           )
         : 0
       setReadinessPercentage(Math.round((averageCourseProgress * 0.6) + (averageMockScore * 0.4)))
@@ -161,7 +193,7 @@ export default function ProgressPage() {
   const courseProgressData = stats.courses.map((course) => ({
     name: getCourseShortLabel(course),
     fullName: course.course_title,
-    progress: course.progress_percentage || 0,
+    progress: course.lessons_completed || 0,
   }))
 
   const assessmentScoresData = latestMockScores.map((mock) => ({
@@ -244,7 +276,7 @@ export default function ProgressPage() {
               Course Progress
             </CardTitle>
             <CardDescription>
-              Your progress across enrolled courses
+              Completed lessons across enrolled courses
             </CardDescription>
           </CardHeader>
           <CardContent>

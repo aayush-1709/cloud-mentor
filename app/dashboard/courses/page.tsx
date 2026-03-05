@@ -11,6 +11,7 @@ export default function CoursesPage() {
   const [courses, setCourses] = useState<Course[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [enrollingCourses, setEnrollingCourses] = useState<Set<string>>(new Set())
+  const [deEnrollingCourses, setDeEnrollingCourses] = useState<Set<string>>(new Set())
   const [enrolledCourses, setEnrolledCourses] = useState<Set<string>>(new Set())
   const [filter, setFilter] = useState<'all' | 'practitioner' | 'associate' | 'advanced' | 'enrolled'>('all')
 
@@ -58,6 +59,37 @@ export default function CoursesPage() {
         const updated = new Set(prev)
         updated.delete(courseId)
         return updated
+      })
+    }
+  }
+
+  const handleDeEnroll = async (courseId: string) => {
+    const confirmed = window.confirm('Are you sure you want to de-enroll from this course?')
+    if (!confirmed) return
+
+    setDeEnrollingCourses((prev) => new Set(prev).add(courseId))
+    try {
+      const response = await fetch('/api/courses', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId }),
+      })
+      if (!response.ok) {
+        console.error('De-enrollment error')
+        return
+      }
+      setEnrolledCourses((prev) => {
+        const next = new Set(prev)
+        next.delete(courseId)
+        return next
+      })
+    } catch (error) {
+      console.error('Error de-enrolling from course:', error)
+    } finally {
+      setDeEnrollingCourses((prev) => {
+        const next = new Set(prev)
+        next.delete(courseId)
+        return next
       })
     }
   }
@@ -138,11 +170,21 @@ export default function CoursesPage() {
               </CardHeader>
               <CardContent className="space-y-2">
                 {enrolledCourses.has(course.id) ? (
-                  <Button asChild className="w-full">
-                    <Link href={`/dashboard/courses/${course.id}`}>
-                      Continue Learning
-                    </Link>
-                  </Button>
+                  <>
+                    <Button asChild className="w-full">
+                      <Link href={`/dashboard/courses/${course.id}`}>
+                        Continue Learning
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      disabled={deEnrollingCourses.has(course.id)}
+                      onClick={() => void handleDeEnroll(course.id)}
+                    >
+                      {deEnrollingCourses.has(course.id) ? 'De-enrolling...' : 'De-enroll'}
+                    </Button>
+                  </>
                 ) : (
                   <>
                     <Button 

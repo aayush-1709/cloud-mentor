@@ -22,6 +22,15 @@ type SectionQuizProps = {
 type CognitiveEvaluation = {
   readinessPercentage: number
   weakModules: string[]
+  strongModules: string[]
+  studyAgainTopics: string[]
+  modulePerformance: Array<{
+    module: string
+    correct: number
+    total: number
+    accuracy: number
+    status: 'strong' | 'moderate' | 'weak'
+  }>
   analysis: string
   recommendations: string[]
 }
@@ -102,23 +111,25 @@ export function SectionQuiz({ sectionName, moduleTitles, questions, onComplete }
 
     setIsEvaluating(true)
     try {
-      const incorrectQuestions = questions
-        .filter((question) => {
+      const questionResults = questions
+        .map((question) => {
           const answer = answers[question.id]
+          let isCorrect = false
           if (question.options && typeof question.correctIndex === 'number') {
-            return answer !== question.correctIndex
+            isCorrect = answer === question.correctIndex
           }
           if (typeof question.correctTextAnswer === 'string') {
-            return String(answer ?? '').trim().toLowerCase() !== question.correctTextAnswer.trim().toLowerCase()
+            isCorrect = String(answer ?? '').trim().toLowerCase() === question.correctTextAnswer.trim().toLowerCase()
           }
-          return false
-        })
-        .map((question) => ({
+          return {
+          id: question.id,
           question: question.question,
           userAnswer: getUserAnswerText(question),
           correctAnswer: getCorrectAnswerText(question),
           explanation: question.explanation,
-        }))
+          isCorrect,
+          }
+        })
 
       const response = await fetch('/api/mentor/section-evaluation', {
         method: 'POST',
@@ -129,7 +140,7 @@ export function SectionQuiz({ sectionName, moduleTitles, questions, onComplete }
           score,
           totalQuestions: total,
           percentage,
-          incorrectQuestions,
+          questionResults,
         }),
       })
       if (!response.ok) {
@@ -204,6 +215,30 @@ export function SectionQuiz({ sectionName, moduleTitles, questions, onComplete }
                   {evaluation.weakModules.length > 0 ? evaluation.weakModules.join(', ') : 'No major weak module detected'}
                 </span>
               </p>
+              <p>
+                Successfully answered topics:{' '}
+                <span className="font-semibold">
+                  {evaluation.strongModules.length > 0 ? evaluation.strongModules.join(', ') : 'None identified yet'}
+                </span>
+              </p>
+              <p>
+                Study again (subsection topics):{' '}
+                <span className="font-semibold">
+                  {evaluation.studyAgainTopics.length > 0
+                    ? evaluation.studyAgainTopics.join(', ')
+                    : 'No specific subsection revision needed'}
+                </span>
+              </p>
+              {evaluation.modulePerformance.length > 0 ? (
+                <div className="rounded border border-border p-2 mt-1 space-y-1">
+                  <p className="font-medium">Topic-wise performance</p>
+                  {evaluation.modulePerformance.map((item) => (
+                    <p key={item.module} className="text-xs">
+                      {item.module}: {item.correct}/{item.total} ({item.accuracy}%)
+                    </p>
+                  ))}
+                </div>
+              ) : null}
               {evaluation.analysis ? (
                 <p className="text-muted-foreground">{evaluation.analysis}</p>
               ) : null}
