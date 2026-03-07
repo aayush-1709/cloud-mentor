@@ -14,19 +14,14 @@ export async function generateTextWithGemini(args: GenerateTextArgs) {
   const { prompt, maxTokens = 1024, temperature = 0.7 } = args;
 
   const body = JSON.stringify({
-    anthropic_version: "bedrock-2023-05-31",
-    max_tokens: maxTokens,
-    temperature,
-    messages: [
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
+    prompt: `<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n${prompt}\n<|eot_id|><|start_header_id|>assistant<|end_header_id|>`,
+    max_gen_len: maxTokens,
+    temperature: temperature,
+    top_p: 0.9
   });
 
   const command = new InvokeModelCommand({
-    modelId: "anthropic.claude-3-sonnet-20240229-v1:0",
+    modelId: "meta.llama3-70b-instruct-v1:0",
     contentType: "application/json",
     accept: "application/json",
     body,
@@ -39,6 +34,6 @@ export async function generateTextWithGemini(args: GenerateTextArgs) {
   );
 
   return {
-    text: decoded.content[0].text,
+    text: decoded.generation,
   };
 }
