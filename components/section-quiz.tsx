@@ -201,7 +201,7 @@ export function SectionQuiz({ sectionName, moduleTitles, questions, onComplete }
           </Button>
         </div>
         <div className="rounded-md border border-border bg-muted/40 p-3 text-sm space-y-1">
-          <p className="font-medium">Gemini Cognitive Evaluation</p>
+          <p className="font-medium">AI Cognitive Evaluation</p>
           {isEvaluating ? (
             <p className="text-muted-foreground">Evaluating weak modules...</p>
           ) : evaluation ? (
