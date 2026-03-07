@@ -398,7 +398,7 @@ Transform AWS learning from passive content consumption to active competency ver
 ### 6.1 Technology Stack
 - **Frontend**: React/Next.js hosted on AWS Amplify or Vercel
 - **Backend**: FastAPI (Python) on AWS Lambda or ECS
-- **AI/ML**: Amazon Bedrock (Claude/Llama models)
+- **AI/ML**: Amazon Bedrock (Meta Llama 3 model family)
 - **Database**: Amazon DynamoDB for user data, RDS for relational data
 - **Storage**: Amazon S3 for content and media
 - **Authentication**: Amazon Cognito

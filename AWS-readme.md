@@ -27,7 +27,7 @@ It is written so you can give it to ChatGPT and ask for step-by-step execution p
 
 - App is Next.js App Router (`npm run dev`, `npm run build`, `npm run start`).
 - DB connection uses `DATABASE_URL`.
-- Current AI code reads Gemini env vars (`GEMINI_API_KEY*`, `GOOGLE_GENERATIVE_AI_API_KEY`) in `lib/gemini.ts`.
+- Current AI code uses AWS Bedrock Runtime (`@aws-sdk/client-bedrock-runtime`) in `lib/gemini.ts`.
 - Project has SQL setup scripts in `scripts/` and a full dump in `cloudmentor.sql`.
 - There is no auth flow; app uses a demo user.
 
@@ -156,7 +156,7 @@ Enable:
 
 In Bedrock console:
 
-- request model access for chosen model (example: Claude Sonnet)
+- request model access for chosen model (example: Meta Llama 3 70B Instruct)
 - note model ID and region availability
 
 ## E2. Lambda Bedrock proxy (recommended)

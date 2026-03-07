@@ -48,7 +48,6 @@ export async function POST(request: Request) {
     )
 
     const result = await generateTextWithGemini({
-      model: 'gemini-2.5-flash',
       system:
         'You are an AWS certification performance evaluator. Return STRICT JSON only with keys: readinessPercentage (number), weakSectors (string[]), analysis (string), recommendations (string[]).',
       prompt: `Evaluate this mock test result.

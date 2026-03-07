@@ -12,7 +12,7 @@ The app is intentionally demo-first:
 
 - Next.js App Router + React + TypeScript
 - PostgreSQL with direct `pg` queries (`lib/db.ts`)
-- Gemini integration through `@ai-sdk/google` (`lib/gemini.ts`)
+- AWS Bedrock Runtime integration through `@aws-sdk/client-bedrock-runtime` (`lib/gemini.ts`)
 - Tailwind CSS + shadcn/ui + Radix UI
 - Recharts for progress visualizations
 
@@ -33,13 +33,9 @@ Create `.env.local`:
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/cloudmentor
 
-# Use one or more Gemini keys
-GOOGLE_GENERATIVE_AI_API_KEY=your_key
-# Optional alternatives (also supported):
-# GEMINI_API_KEY=your_key
-# GEMINI_API_KEY_1=your_key
-# GEMINI_API_KEY_2=your_key
-# GEMINI_API_KEY_3=your_key
+# Bedrock runtime settings
+AWS_REGION=ap-south-1
+# EC2/ECS role-based auth is preferred; no static key needed when IAM role is attached.
 ```
 
 `DATABASE_URL` is required at startup.
@@ -125,4 +121,4 @@ App runs at `http://localhost:3000`.
 
 - Host Next.js on EC2, Amplify, or another Node-capable runtime.
 - Use Amazon RDS PostgreSQL (or compatible managed Postgres) for `DATABASE_URL`.
-- Store Gemini API keys in secure environment configuration.
+- Use IAM roles for Bedrock access and avoid static AWS keys on server.

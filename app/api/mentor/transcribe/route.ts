@@ -13,9 +13,8 @@ export async function POST(req: Request) {
     const arrayBuffer = await audioBlob.arrayBuffer()
     const base64Audio = Buffer.from(arrayBuffer).toString('base64')
 
-    // Use Gemini as a lightweight fallback for transcription simulation
+    // Use Bedrock Llama as a lightweight fallback for transcription simulation
     const result = await generateTextWithGemini({
-      model: 'gemini-2.5-flash',
       prompt: `You are a transcription assistant. The following is a base64 encoded audio file that needs to be transcribed. Return a short, clean transcription-style sentence only. Audio sample: ${base64Audio.substring(0, 100)}...`,
       temperature: 0.3,
     })

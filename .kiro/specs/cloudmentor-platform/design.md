@@ -62,7 +62,7 @@ CloudMentor follows a modern serverless microservices architecture leveraging AW
 │                  AI INTELLIGENCE LAYER                           │
 │                    AMAZON BEDROCK                                │
 │  ┌──────────────────────────────────────────────────────┐       │
-│  │  Claude 3 Sonnet  │  Llama 3  │  Titan Embeddings   │       │
+│  │  Llama 3 70B       │  Llama 3  │  Titan Embeddings   │       │
 │  └──────────────────────────────────────────────────────┘       │
 └────────────────────────────┬────────────────────────────────────┘
                              │
@@ -104,7 +104,7 @@ CloudMentor follows a modern serverless microservices architecture leveraging AW
 - **AWS App Runner** (Alternative): Simplified container deployment
 
 #### AI & Machine Learning
-- **Amazon Bedrock**: Foundation models (Claude 3, Llama 3, Titan)
+- **Amazon Bedrock**: Foundation models (Llama 3, Titan)
   - Scenario generation
   - Answer evaluation
   - Mentor chat responses
@@ -484,7 +484,7 @@ async def evaluate_scenario_answer(
     """
     
     response = await bedrock_client.invoke_model(
-        model_id="anthropic.claude-3-sonnet",
+        model_id="meta.llama3-70b-instruct-v1:0",
         prompt=prompt
     )
     
@@ -576,7 +576,7 @@ async def mentor_chat(
     
     # Stream response from Bedrock
     async for chunk in bedrock_client.stream_chat(
-        model_id="anthropic.claude-3-sonnet",
+        model_id="meta.llama3-70b-instruct-v1:0",
         messages=messages,
         temperature=0.7,
         max_tokens=2000
@@ -614,7 +614,7 @@ async def guide_console_operation(
     """
     
     response = await bedrock_client.invoke_model(
-        model_id="anthropic.claude-3-sonnet",
+        model_id="meta.llama3-70b-instruct-v1:0",
         prompt=prompt
     )
     
@@ -866,7 +866,7 @@ async def explain_risk(risk: SecurityRisk, user_level: str) -> str:
     """
     
     explanation = await bedrock_client.invoke_model(
-        model_id="anthropic.claude-3-sonnet",
+        model_id="meta.llama3-70b-instruct-v1:0",
         prompt=prompt
     )
     

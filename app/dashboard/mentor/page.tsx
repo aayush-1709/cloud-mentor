@@ -122,6 +122,7 @@ export default function MentorPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          message: trimmed,
           messages: nextMessages.map((message) => ({
             role: message.role,
             content: message.content,

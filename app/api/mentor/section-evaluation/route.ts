@@ -166,7 +166,6 @@ export async function POST(request: Request) {
     const questionResults = body.questionResults || []
 
     const result = await generateTextWithGemini({
-      model: 'gemini-2.5-flash',
       system:
         'You are an AWS learning evaluator. Output strictly valid JSON only. No markdown.',
       prompt: `Evaluate this learner's COMPLETE 25-question section quiz and map outcomes to subsection modules.

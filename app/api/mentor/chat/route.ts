@@ -82,15 +82,35 @@ function formatStructuredReply(reply: StructuredMentorReply) {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const messages = (body.messages || []) as Array<{ role: 'user' | 'assistant'; content: string }>
+    const messages = (Array.isArray(body.messages) ? body.messages : []) as Array<{
+      role: 'user' | 'assistant'
+      content: string
+    }>
+    const directMessage = typeof body.message === 'string' ? body.message.trim() : ''
     const learnerContext = (body.learnerContext || '') as string
+    const sanitizedMessages = messages
+      .map((message) => ({
+        role: message.role === 'assistant' ? 'assistant' : 'user',
+        content: (message.content || '').trim(),
+      }))
+      .filter((message) => Boolean(message.content))
+
+    const latestUserMessage = [...sanitizedMessages]
+      .reverse()
+      .find((message) => message.role === 'user')?.content
+    const prompt = directMessage || latestUserMessage || ''
+
+    if (!prompt.trim()) {
+      return Response.json({
+        text: 'Please ask a question so I can help you.',
+      })
+    }
 
     const contextPrompt = learnerContext
       ? `\n\nLearner performance context (from app state):\n${learnerContext}\nUse this when the user asks about performance/readiness/weak areas.`
       : ''
 
     const result = await generateTextWithGemini({
-      model: 'gemini-2.5-flash',
       system: `${AWS_MENTOR_SYSTEM_PROMPT}${contextPrompt}
 
 Output policy:
@@ -105,7 +125,8 @@ Output policy:
 - Keep summary under 70 words.
 - Keep arrays concise (3-6 bullets each).
 - If weakAreas are unknown, return an empty array.`,
-      messages: messages || [],
+      messages: sanitizedMessages,
+      prompt,
     })
 
     let parsed: StructuredMentorReply | null = null

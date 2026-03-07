@@ -79,7 +79,7 @@ CloudMentor AI leverages a modern serverless-first AWS architecture to deliver a
 
 | AWS Service | Purpose |
 |---|---|
-| **Amazon Bedrock** | Powers the AI Mentor — uses Claude 3.5 Sonnet or GPT-4o for context-aware AWS certification guidance, scenario evaluation, and adaptive tutoring |
+| **Amazon Bedrock** | Powers the AI Mentor — uses Meta Llama 3 70B Instruct for context-aware AWS certification guidance, scenario evaluation, and adaptive tutoring |
 | **Amazon Transcribe** | Real-time voice-to-text — converts learner voice queries into text for the AI Mentor chat |
 | **Amazon Polly** | Text-to-speech — reads AI Mentor responses aloud with natural-sounding voices for accessibility |
 | **Amazon Comprehend** | NLP analysis — evaluates free-form assessment answers, detects sentiment, and extracts key AWS concepts from learner responses |
@@ -99,7 +99,7 @@ Amazon API Gateway (WebSocket)
     ▼
 ECS Fargate (Mentor Service)
     │
-    ├──► Amazon Bedrock (Claude/GPT) ──► Streaming Response
+    ├──► Amazon Bedrock (Meta Llama 3) ──► Streaming Response
     │
     ├──► Amazon Comprehend (Concept Extraction)
     │
