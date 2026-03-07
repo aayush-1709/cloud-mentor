@@ -40,7 +40,8 @@ const PROFESSIONAL_COMPLETION_STORAGE_KEY = 'cloudmentor-sap-completed'
 const ASSOCIATE_LESSON_ID_PREFIX = 'assoc-'
 const PRACTITIONER_LESSON_ID_PREFIX = 'prac-'
 const PROFESSIONAL_LESSON_ID_PREFIX = 'pro-'
-const TRACK_TOTAL_LESSONS = 9
+const ASSOCIATE_TOTAL_LESSONS = 51
+const DEMO_TRACK_TOTAL_LESSONS = 9
 
 interface ProgressStats {
   courses: CourseProgress[]
@@ -98,9 +99,10 @@ export default function ProgressPage() {
 
       const countValidLessons = (ids: string[], prefix: string) =>
         ids.filter((id) => typeof id === 'string' && id.startsWith(prefix)).length
+      const ASSOCIATE_LESSON_ID_PATTERN = /^assoc-(cf|iam|compute|storage|net|db|sv|ms|ap)-\d+$/i
 
       const associateCompleted = countValidLessons(
-        getStoredIds(SAA_COMPLETION_STORAGE_KEY),
+        getStoredIds(SAA_COMPLETION_STORAGE_KEY).filter((id) => ASSOCIATE_LESSON_ID_PATTERN.test(id)),
         ASSOCIATE_LESSON_ID_PREFIX,
       )
       const practitionerCompleted = countValidLessons(
@@ -126,7 +128,8 @@ export default function ProgressPage() {
           : isPractitioner
             ? practitionerCompleted
             : professionalCompleted
-        const liveTotal = Math.max(course.total_lessons || 0, TRACK_TOTAL_LESSONS)
+        const expectedTrackTotal = isAssociate ? ASSOCIATE_TOTAL_LESSONS : DEMO_TRACK_TOTAL_LESSONS
+        const liveTotal = Math.max(course.total_lessons || 0, expectedTrackTotal)
         const livePercentage = liveTotal > 0 ? Math.round((liveCompleted / liveTotal) * 100) : 0
 
         return {
