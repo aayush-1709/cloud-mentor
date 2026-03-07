@@ -12,334 +12,434 @@ type RoadmapSection = {
   order: number
   title: string
   lessons: RoadmapLesson[]
+  quizQuestions: SectionQuizQuestion[]
 }
 
-const STORAGE_KEY = 'cloudmentor-saa-completed'
-const QUIZ_STORAGE_KEY = 'cloudmentor-saa-quiz-passed'
 const DAILY_COMPLETION_DATES_KEY = 'cloudmentor-daily-completion-dates'
 
-const architectQuizQuestions: SectionQuizQuestion[] = [
-  {
-    id: '1A',
-    question: 'Which cloud characteristic MOST directly enables converting large capital expenditure into variable operational expenditure?',
-    options: ['Multi-AZ', 'Multi-Region deployment', 'Larger EC2 instances', 'Dedicated Hosts'],
-    correctIndex: 1,
-    explanation:
-      'Multi-AZ protects within one region. Global latency optimization and resilience require deploying across multiple AWS Regions.',
-  },
-  {
-    id: '2A',
-    question: 'Which service best accelerates global static and dynamic content delivery?',
-    options: ['CloudFront', 'SQS', 'EFS', 'IAM'],
-    correctIndex: 0,
-    explanation:
-      'CloudFront uses a global edge network to cache and deliver content closer to users, reducing latency.',
-  },
-  {
-    id: '3A',
-    question: 'For strict RPO requirements, which architecture pattern is more suitable?',
-    options: ['Backup once a week', 'Cross-Region replication', 'Single AZ deployment', 'Bigger EC2 instance'],
-    correctIndex: 1,
-    explanation:
-      'Cross-Region replication reduces potential data loss during regional outages and improves recovery objectives.',
-  },
-  {
-    id: '4A',
-    question: 'What IAM principle should always be followed in production?',
-    options: ['Least privilege', 'Open access for speed', 'Root credentials for apps', 'Single shared user'],
-    correctIndex: 0,
-    explanation:
-      'Least privilege reduces blast radius and is a core AWS security best practice.',
-  },
-  {
-    id: '5A',
-    question: 'In S3 cost optimization, what is a recommended approach for infrequently accessed data?',
-    options: ['S3 Standard only', 'Lifecycle transitions to cheaper classes', 'Store in EBS snapshots only', 'Disable versioning always'],
-    correctIndex: 1,
-    explanation:
-      'Lifecycle rules automate transitions to lower-cost classes such as IA or Glacier based on access patterns.',
-  },
-  {
-    id: '6A',
-    question: 'Name the AWS service used for centralized multi-account governance.',
-    correctTextAnswer: 'AWS Organizations',
-    explanation:
-      'AWS Organizations enables account grouping, governance guardrails, and centralized policy management.',
-  },
-  
-  {
-    id: '7A',
-    question: 'Which cloud characteristic enables automatic scaling of resources based on demand fluctuations?',
-    options: ['Measured service', 'Rapid elasticity', 'Resource pooling', 'Dedicated infrastructure'],
-    correctIndex: 1,
-    explanation:
-      'Rapid elasticity allows resources to scale out and scale in automatically depending on workload demand.',
-  },
-  {
-    id: '8A',
-    question: 'Which AWS construct provides isolation from data center-level failures within a Region?',
-    options: ['Availability Zone', 'Edge Location', 'Local Zone', 'VPC Peering'],
-    correctIndex: 0,
-    explanation:
-      'An Availability Zone is physically isolated with independent power and networking, acting as a failure boundary.',
-  },
-  {
-    id: '9A',
-    question: 'Which component is NOT considered part of an AWS Region?',
-    options: ['Availability Zones', 'Regional services', 'Edge Locations', 'Regional control plane'],
-    correctIndex: 2,
-    explanation:
-      'Edge Locations are part of AWS Global Infrastructure but exist outside Regions for low-latency delivery.',
-  },
-  {
-    id: '10A',
-    question: 'Under the Shared Responsibility Model, who is responsible for patching the guest operating system on EC2?',
-    options: ['AWS', 'Customer', 'Shared responsibility equally', 'AWS Support'],
-    correctIndex: 1,
-    explanation:
-      'In EC2, AWS secures the infrastructure, but the customer manages the guest OS, middleware, and applications.',
-  },
-  {
-    id: '11A',
-    question: 'Which responsibility shifts to AWS when migrating from EC2-managed database to Amazon RDS?',
-    options: ['IAM configuration', 'Database engine patching', 'Security group management', 'VPC design'],
-    correctIndex: 1,
-    explanation:
-      'RDS is a managed service where AWS handles database engine patching and backups (if enabled).',
-  },
-  {
-    id: '12A',
-    question: 'Which Well-Architected pillar focuses on eliminating single points of failure?',
-    options: ['Security', 'Reliability', 'Cost Optimization', 'Operational Excellence'],
-    correctIndex: 1,
-    explanation:
-      'The Reliability pillar promotes redundancy, fault tolerance, and automated recovery.',
-  },
-  {
-    id: '13A',
-    question: 'Which pillar encourages performing operations as code and automation?',
-    options: ['Operational Excellence', 'Security', 'Sustainability', 'Performance Efficiency'],
-    correctIndex: 0,
-    explanation:
-      'Operational Excellence promotes infrastructure as code and automation for consistent operations.',
-  },
-  {
-    id: '14A',
-    question: 'Which pricing model provides maximum savings for predictable workloads over 3 years?',
-    options: ['On-Demand', 'Spot Instances', 'Savings Plans', 'Dedicated Hosts'],
-    correctIndex: 2,
-    explanation:
-      'Savings Plans provide significant discounts for 1- or 3-year commitments with predictable usage.',
-  },
-  {
-    id: '15A',
-    question: 'Which pricing option is best for interruptible, fault-tolerant batch workloads?',
-    options: ['Reserved Instances', 'On-Demand', 'Spot Instances', 'Enterprise Support'],
-    correctIndex: 2,
-    explanation:
-      'Spot Instances offer large discounts but may be interrupted, making them ideal for flexible workloads.',
-  },
-  {
-    id: '16A',
-    question: 'Which support plan includes a Technical Account Manager (TAM)?',
-    options: ['Developer', 'Business', 'Enterprise', 'Basic'],
-    correctIndex: 2,
-    explanation:
-      'Enterprise Support includes a dedicated TAM and proactive architectural guidance.',
-  },
-  {
-    id: '17A',
-    question: 'Which support plan provides 24/7 technical support without a dedicated TAM?',
-    options: ['Basic', 'Developer', 'Business', 'Enterprise'],
-    correctIndex: 2,
-    explanation:
-      'Business Support offers 24/7 support but does not include a dedicated TAM.',
-  },
-  {
-    id: '18A',
-    question: 'Which cloud concept allows multiple customers to securely share infrastructure?',
-    options: ['Elasticity', 'Multi-tenancy', 'Broad network access', 'Measured service'],
-    correctIndex: 1,
-    explanation:
-      'Multi-tenancy enables shared infrastructure with logical isolation between customers.',
-  },
-  {
-    id: '19A',
-    question: 'Which Well-Architected pillar focuses on right-sizing resources based on workload needs?',
-    options: ['Performance Efficiency', 'Security', 'Reliability', 'Sustainability'],
-    correctIndex: 0,
-    explanation:
-      'Performance Efficiency ensures selecting appropriate instance types and resource configurations.',
-  },
-  {
-    id: '20A',
-    question: 'A company consistently overprovisions resources to avoid downtime. Which tradeoff is being mismanaged?',
-    options: ['Security vs Cost', 'Reliability vs Cost', 'Performance vs Sustainability', 'Operational vs Security'],
-    correctIndex: 1,
-    explanation:
-      'Overprovisioning improves reliability but violates cost optimization. A balance is required.',
-  },
-  {
-    id: '21A',
-    question: 'Which AWS infrastructure design reduces latency for static content globally?',
-    options: ['Multi-AZ', 'Edge Locations with CloudFront', 'Larger EC2 instances', 'Dedicated Hosts'],
-    correctIndex: 1,
-    explanation:
-      'CloudFront uses Edge Locations worldwide to cache and deliver static content closer to users.',
-  },
-  {
-    id: '22A',
-    question: 'Which pillar directly supports minimizing environmental impact by reducing idle resources?',
-    options: ['Cost Optimization', 'Reliability', 'Security', 'Sustainability'],
-    correctIndex: 3,
-    explanation:
-      'The Sustainability pillar focuses on efficient resource usage and reducing environmental footprint.',
-  },
-  {
-    id: '23A',
-    question: 'Which cloud characteristic ensures services are accessible over the network via standard mechanisms?',
-    options: ['Broad network access', 'Elasticity', 'Resource pooling', 'On-demand self-service'],
-    correctIndex: 0,
-    explanation:
-      'Broad network access ensures services are available over the internet using standard protocols.',
-  },
-  {
-    id: '24A',
-    question: 'Which AWS pricing tool helps estimate projected costs before deployment?',
-    options: ['Cost Explorer', 'AWS Pricing Calculator', 'Trusted Advisor', 'AWS Budgets'],
-    correctIndex: 1,
-    explanation:
-      'AWS Pricing Calculator is used to forecast costs before deploying resources.',
-  },
-  {
-    id: '25A',
-    question: 'Under the Shared Responsibility Model, AWS is responsible for which layer?',
-    options: ['Application code security', 'Guest OS patching', 'Hypervisor and physical infrastructure', 'IAM user permissions'],
-    correctIndex: 2,
-    explanation:
-      'AWS secures the underlying physical infrastructure and hypervisor layer, while customers secure OS and above.',
-  }// Add remaining architect-level questions up to 25 here.
-]
+type RoadmapTrack = {
+  heading: string
+  description: string
+  completionStorageKey: string
+  quizStorageKey: string
+  sections: RoadmapSection[]
+}
 
-const awsSaaRoadmap: RoadmapSection[] = [
-  {
-    id: 'cloud-foundations',
-    order: 1,
-    title: 'Cloud Foundations',
-    lessons: [
-      { id: 'cf-1', title: 'What is Cloud Computing', youtubeId: 'M988_fsOSWo' },
-      { id: 'cf-2', title: 'AWS Global Infrastructure', youtubeId: 'Z3SYDTMP3ME' },
-      { id: 'cf-3', title: 'Shared Responsibility Model', youtubeId: 'M1l7nX8pB4Q' },
-      { id: 'cf-4', title: 'AWS Well-Architected Framework', youtubeId: 'Pp4N9Q8xwJU' },
-      { id: 'cf-5', title: 'AWS Pricing & Support Plans', youtubeId: 'x5Y0w5JfQfI' },
-    ],
-  },
-  {
-    id: 'iam',
-    order: 2,
-    title: 'IAM',
-    lessons: [
-      { id: 'iam-1', title: 'IAM Users, Groups, Policies', youtubeId: 'ulprqHHWlng' },
-      { id: 'iam-2', title: 'IAM Roles & Trust Policies', youtubeId: 'YQsK4MtsELU' },
-      { id: 'iam-3', title: 'Permission Boundaries', youtubeId: 'lF5M_3qR9hI' },
-      { id: 'iam-4', title: 'IAM Best Practices', youtubeId: '2z7R7l5fC7w' },
-      { id: 'iam-5', title: 'AWS Organizations & SCP', youtubeId: 'nN4uRx5EJf4' },
-    ],
-  },
-  {
-    id: 'compute',
-    order: 3,
-    title: 'Compute',
-    lessons: [
-      { id: 'compute-1', title: 'EC2 Fundamentals', youtubeId: 'iHX_jtU2xL4' },
-      { id: 'compute-2', title: 'EC2 Instance Types', youtubeId: 'vQ5JfM5T2b4' },
-      { id: 'compute-3', title: 'AMIs & Snapshots', youtubeId: '6x7fJ6t5iN0' },
-      { id: 'compute-4', title: 'Auto Scaling Groups', youtubeId: 'Yy2w8XQ5nO8' },
-      { id: 'compute-5', title: 'Elastic Load Balancer', youtubeId: '8mR5fQ9Kj5M' },
-      { id: 'compute-6', title: 'Placement Groups', youtubeId: 'rY9a0Q6cH0Q' },
-    ],
-  },
-  {
-    id: 'storage',
-    order: 4,
-    title: 'Storage',
-    lessons: [
-      { id: 'storage-1', title: 'S3 Deep Dive', youtubeId: '77lMCiiMilo' },
-      { id: 'storage-2', title: 'S3 Storage Classes', youtubeId: 'Yb3D0kFJ8tI' },
-      { id: 'storage-3', title: 'EBS Volumes', youtubeId: 'G5N5D5FfQmQ' },
-      { id: 'storage-4', title: 'EFS vs FSx', youtubeId: '9N8T9Q3xS2o' },
-      { id: 'storage-5', title: 'Backup & Lifecycle Policies', youtubeId: '9Q3mKjI6V3s' },
-    ],
-  },
-  {
-    id: 'networking',
-    order: 5,
-    title: 'Networking',
-    lessons: [
-      { id: 'net-1', title: 'VPC Basics', youtubeId: 'bGDMe0Jg6GY' },
-      { id: 'net-2', title: 'Subnets (Public vs Private)', youtubeId: 'xM7S8vO8m9Q' },
-      { id: 'net-3', title: 'Route Tables', youtubeId: 'W5kP8xjZgEI' },
-      { id: 'net-4', title: 'Internet Gateway & NAT Gateway', youtubeId: 'mQ1Q3bQ7eYk' },
-      { id: 'net-5', title: 'Security Groups vs NACL', youtubeId: 'aN1k4D2j0Js' },
-      { id: 'net-6', title: 'VPC Peering', youtubeId: 'xjFfV3O2m6Y' },
-      { id: 'net-7', title: 'Transit Gateway', youtubeId: 'D2mI7W3vN0k' },
-    ],
-  },
-  {
-    id: 'databases',
-    order: 6,
-    title: 'Databases',
-    lessons: [
-      { id: 'db-1', title: 'RDS Overview', youtubeId: 'P6x7wJ4QxwQ' },
-      { id: 'db-2', title: 'Multi-AZ vs Read Replica', youtubeId: 'iN6Q7m4V0eU' },
-      { id: 'db-3', title: 'Aurora', youtubeId: '9tN9oY3x5mQ' },
-      { id: 'db-4', title: 'DynamoDB', youtubeId: 'HaEPXoXVf2k' },
-      { id: 'db-5', title: 'ElastiCache', youtubeId: 'wN9Q3fL3sLQ' },
-      { id: 'db-6', title: 'Database Migration Service', youtubeId: 'u7sP2mQ6N1U' },
-    ],
-  },
-  {
-    id: 'serverless',
-    order: 7,
-    title: 'Serverless',
-    lessons: [
-      { id: 'sv-1', title: 'Lambda', youtubeId: 'eOBq__h4OJ4' },
-      { id: 'sv-2', title: 'API Gateway', youtubeId: 's6MKZqV_4VQ' },
-      { id: 'sv-3', title: 'SQS', youtubeId: '3OeV0V6k2I8' },
-      { id: 'sv-4', title: 'SNS', youtubeId: 'JtlR4xNf1kA' },
-      { id: 'sv-5', title: 'EventBridge', youtubeId: 'A6f7kK8Qv9I' },
-      { id: 'sv-6', title: 'Step Functions', youtubeId: 'TFO9nqRr8kM' },
-    ],
-  },
-  {
-    id: 'monitoring-security',
-    order: 8,
-    title: 'Monitoring & Security',
-    lessons: [
-      { id: 'ms-1', title: 'CloudWatch', youtubeId: '6Q9fS3wYxqE' },
-      { id: 'ms-2', title: 'CloudTrail', youtubeId: 'hQ9w8Xb4U2o' },
-      { id: 'ms-3', title: 'AWS Config', youtubeId: 'mQ4v7Nn2fIY' },
-      { id: 'ms-4', title: 'KMS', youtubeId: 'A7yN4eF2lUo' },
-      { id: 'ms-5', title: 'WAF', youtubeId: 'vN8Q3mI5sTo' },
-      { id: 'ms-6', title: 'Shield', youtubeId: 'gQ6mN9eI4wA' },
-    ],
-  },
-  {
-    id: 'architecture-patterns',
-    order: 9,
-    title: 'Architecture Patterns',
-    lessons: [
-      { id: 'ap-1', title: 'Multi-AZ Architecture', youtubeId: 'V9qj0f5f7sY' },
-      { id: 'ap-2', title: 'Multi-Region Architecture', youtubeId: 'S6hF9jM9N3k' },
-      { id: 'ap-3', title: 'Fault Tolerance', youtubeId: 'qQ4x8bN6sY8' },
-      { id: 'ap-4', title: 'Disaster Recovery (RTO / RPO)', youtubeId: 'C7mT8nJ2vP0' },
-      { id: 'ap-5', title: 'Cost Optimization Patterns', youtubeId: 'zD6N4wQ8mLQ' },
-    ],
-  },
-]
+const makeQuiz = (prefix: string, questions: Array<Omit<SectionQuizQuestion, 'id'>>): SectionQuizQuestion[] =>
+  questions.map((question, index) => ({ ...question, id: `${prefix}-${index + 1}` }))
 
-export function SAARoadmapViewer() {
-  const sections = awsSaaRoadmap
+const roadmapByTrack: Record<'associate' | 'practitioner' | 'professional', RoadmapTrack> = {
+  associate: {
+    heading: 'AWS Certified Solutions Architect - Associate Roadmap',
+    description: '3 demo sections • 5 quiz questions per section',
+    completionStorageKey: 'cloudmentor-saa-completed',
+    quizStorageKey: 'cloudmentor-saa-quiz-passed',
+    sections: [
+      {
+        id: 'assoc-foundations',
+        order: 1,
+        title: 'Cloud & Architecture Foundations',
+        lessons: [
+          { id: 'assoc-f-1', title: 'Global Infrastructure & Region Strategy', youtubeId: 'Z3SYDTMP3ME' },
+          { id: 'assoc-f-2', title: 'Well-Architected Reliability Patterns', youtubeId: 'Pp4N9Q8xwJU' },
+          { id: 'assoc-f-3', title: 'Shared Responsibility in Solution Design', youtubeId: 'M1l7nX8pB4Q' },
+        ],
+        quizQuestions: makeQuiz('assoc-f', [
+          {
+            question: 'Which AWS construct isolates workloads across physically separate facilities in a Region?',
+            options: ['VPC', 'Availability Zone', 'Subnet', 'CloudFront'],
+            correctIndex: 1,
+            explanation: 'Availability Zones are isolated fault domains inside a Region.',
+          },
+          {
+            question: 'Which Well-Architected pillar is most aligned to fault tolerance and recovery?',
+            options: ['Security', 'Reliability', 'Cost Optimization', 'Sustainability'],
+            correctIndex: 1,
+            explanation: 'Reliability focuses on resilient and recoverable architecture.',
+          },
+          {
+            question: 'Who patches the guest OS for an EC2 instance?',
+            options: ['AWS', 'Customer', 'Shared equally', 'Support plan owner'],
+            correctIndex: 1,
+            explanation: 'Customers manage OS and app layer on EC2 instances.',
+          },
+          {
+            question: 'Which service helps globally cache static content closer to users?',
+            options: ['CloudTrail', 'CloudFront', 'SQS', 'RDS'],
+            correctIndex: 1,
+            explanation: 'CloudFront uses edge locations for low-latency delivery.',
+          },
+          {
+            question: 'For minimum blast radius, what IAM approach is best?',
+            options: ['Use root for all operations', 'Least privilege', 'One shared admin user', 'Wide open policies'],
+            correctIndex: 1,
+            explanation: 'Least privilege reduces security and operational risk.',
+          },
+        ]),
+      },
+      {
+        id: 'assoc-core-services',
+        order: 2,
+        title: 'Core Service Design',
+        lessons: [
+          { id: 'assoc-c-1', title: 'Compute Layer: EC2, ASG, ELB', youtubeId: 'iHX_jtU2xL4' },
+          { id: 'assoc-c-2', title: 'Storage Choices: S3, EBS, EFS', youtubeId: '77lMCiiMilo' },
+          { id: 'assoc-c-3', title: 'Database Selection: RDS, Aurora, DynamoDB', youtubeId: 'HaEPXoXVf2k' },
+        ],
+        quizQuestions: makeQuiz('assoc-c', [
+          {
+            question: 'Which service gives managed relational database with automated backups?',
+            options: ['EC2', 'RDS', 'S3', 'Lambda'],
+            correctIndex: 1,
+            explanation: 'RDS manages patching, backups, and operations for relational engines.',
+          },
+          {
+            question: 'Which storage is object-based and ideal for static assets?',
+            options: ['EBS', 'S3', 'Instance Store', 'FSx'],
+            correctIndex: 1,
+            explanation: 'S3 is durable object storage.',
+          },
+          {
+            question: 'What scales EC2 fleet based on demand automatically?',
+            options: ['IAM', 'Auto Scaling Group', 'CloudWatch Logs', 'Route 53 Health Check'],
+            correctIndex: 1,
+            explanation: 'ASG adjusts instance count using policies/metrics.',
+          },
+          {
+            question: 'Which database is fully managed NoSQL key-value/document?',
+            options: ['Aurora', 'DynamoDB', 'RDS MySQL', 'Redshift'],
+            correctIndex: 1,
+            explanation: 'DynamoDB is AWS managed NoSQL.',
+          },
+          {
+            question: 'Which service distributes traffic across multiple targets?',
+            options: ['CloudFront', 'ELB', 'S3 Transfer', 'IAM Roles'],
+            correctIndex: 1,
+            explanation: 'Elastic Load Balancing handles target distribution and health checks.',
+          },
+        ]),
+      },
+      {
+        id: 'assoc-security-ops',
+        order: 3,
+        title: 'Security, Monitoring & Cost',
+        lessons: [
+          { id: 'assoc-s-1', title: 'IAM Roles, Policies, and SCP Basics', youtubeId: 'YQsK4MtsELU' },
+          { id: 'assoc-s-2', title: 'Observability with CloudWatch and CloudTrail', youtubeId: '6Q9fS3wYxqE' },
+          { id: 'assoc-s-3', title: 'Cost Controls and Savings Plans', youtubeId: 'x5Y0w5JfQfI' },
+        ],
+        quizQuestions: makeQuiz('assoc-s', [
+          {
+            question: 'Which service records API activity for audit and compliance?',
+            options: ['CloudTrail', 'CloudWatch', 'Inspector', 'GuardDuty'],
+            correctIndex: 0,
+            explanation: 'CloudTrail captures AWS API events.',
+          },
+          {
+            question: 'Which option is best for predictable long-term compute usage cost reduction?',
+            options: ['On-Demand', 'Savings Plans', 'Spot only', 'Dedicated Hosts only'],
+            correctIndex: 1,
+            explanation: 'Savings Plans usually provide major discounts for steady usage.',
+          },
+          {
+            question: 'Where should app code permissions be attached in AWS?',
+            options: ['Root user', 'IAM role', 'Shared IAM user credentials', 'Security group'],
+            correctIndex: 1,
+            explanation: 'Use IAM roles for workload permissions and keyless auth.',
+          },
+          {
+            question: 'Which service is best for metric alarms and dashboards?',
+            options: ['CloudTrail', 'CloudWatch', 'Config', 'KMS'],
+            correctIndex: 1,
+            explanation: 'CloudWatch handles metrics, alarms, and dashboards.',
+          },
+          {
+            question: 'Which strategy helps reduce S3 storage cost over time?',
+            options: ['Disable encryption', 'Lifecycle transitions', 'Only S3 Standard forever', 'Move data to EBS'],
+            correctIndex: 1,
+            explanation: 'Lifecycle rules move objects to lower-cost storage classes.',
+          },
+        ]),
+      },
+    ],
+  },
+  practitioner: {
+    heading: 'AWS Certified Cloud Practitioner Roadmap',
+    description: 'Same roadmap format as Associate • 3 demo sections',
+    completionStorageKey: 'cloudmentor-practitioner-completed',
+    quizStorageKey: 'cloudmentor-practitioner-quiz-passed',
+    sections: [
+      {
+        id: 'prac-cloud',
+        order: 1,
+        title: 'Cloud Basics',
+        lessons: [
+          { id: 'prac-1-1', title: 'Cloud Computing Value and Benefits', youtubeId: 'M988_fsOSWo' },
+          { id: 'prac-1-2', title: 'AWS Global Infrastructure Basics', youtubeId: 'Z3SYDTMP3ME' },
+          { id: 'prac-1-3', title: 'Shared Responsibility Model', youtubeId: 'M1l7nX8pB4Q' },
+        ],
+        quizQuestions: makeQuiz('prac-1', [
+          {
+            question: 'Which is a primary cloud benefit?',
+            options: ['High upfront capex', 'Agility', 'No internet needed', 'Manual scaling only'],
+            correctIndex: 1,
+            explanation: 'Cloud improves agility and speed of delivery.',
+          },
+          {
+            question: 'An AWS Region contains what?',
+            options: ['One AZ only', 'Multiple AZs', 'Only edge locations', 'Only VPCs'],
+            correctIndex: 1,
+            explanation: 'Regions are made up of multiple Availability Zones.',
+          },
+          {
+            question: 'Who secures physical data centers in AWS?',
+            options: ['Customer', 'AWS', 'Partner', 'Both equally'],
+            correctIndex: 1,
+            explanation: 'AWS secures infrastructure; customers secure workloads.',
+          },
+          {
+            question: 'Which service helps estimate costs before deployment?',
+            options: ['Cost Explorer', 'Pricing Calculator', 'Trusted Advisor', 'Budgets'],
+            correctIndex: 1,
+            explanation: 'Pricing Calculator is meant for pre-deployment estimation.',
+          },
+          {
+            question: 'Which support plan includes only docs/forums and no technical support?',
+            options: ['Basic', 'Developer', 'Business', 'Enterprise'],
+            correctIndex: 0,
+            explanation: 'Basic has limited support options.',
+          },
+        ]),
+      },
+      {
+        id: 'prac-services',
+        order: 2,
+        title: 'Core AWS Services',
+        lessons: [
+          { id: 'prac-2-1', title: 'Compute with EC2 and Lambda', youtubeId: 'eOBq__h4OJ4' },
+          { id: 'prac-2-2', title: 'Storage with S3 and EBS', youtubeId: '77lMCiiMilo' },
+          { id: 'prac-2-3', title: 'Databases with RDS and DynamoDB', youtubeId: 'HaEPXoXVf2k' },
+        ],
+        quizQuestions: makeQuiz('prac-2', [
+          {
+            question: 'Which service is serverless compute?',
+            options: ['EC2', 'Lambda', 'EBS', 'RDS'],
+            correctIndex: 1,
+            explanation: 'Lambda runs code without server management.',
+          },
+          {
+            question: 'Which service is object storage?',
+            options: ['S3', 'EBS', 'EFS', 'RDS'],
+            correctIndex: 0,
+            explanation: 'S3 is object storage.',
+          },
+          {
+            question: 'Which service is managed relational DB?',
+            options: ['DynamoDB', 'RDS', 'ElastiCache', 'SQS'],
+            correctIndex: 1,
+            explanation: 'RDS provides managed relational databases.',
+          },
+          {
+            question: 'Which service is NoSQL key-value/document?',
+            options: ['Aurora', 'DynamoDB', 'RDS PostgreSQL', 'Redshift'],
+            correctIndex: 1,
+            explanation: 'DynamoDB is AWS managed NoSQL.',
+          },
+          {
+            question: 'Which service is used for content delivery with edge caching?',
+            options: ['CloudFront', 'CloudTrail', 'Config', 'S3 Glacier'],
+            correctIndex: 0,
+            explanation: 'CloudFront uses edge locations for faster delivery.',
+          },
+        ]),
+      },
+      {
+        id: 'prac-security-billing',
+        order: 3,
+        title: 'Security, Billing & Governance',
+        lessons: [
+          { id: 'prac-3-1', title: 'IAM Fundamentals', youtubeId: 'ulprqHHWlng' },
+          { id: 'prac-3-2', title: 'Cost Management: Budgets & Cost Explorer', youtubeId: 'x5Y0w5JfQfI' },
+          { id: 'prac-3-3', title: 'Governance with Organizations', youtubeId: 'nN4uRx5EJf4' },
+        ],
+        quizQuestions: makeQuiz('prac-3', [
+          {
+            question: 'Which IAM best practice is recommended?',
+            options: ['Use root daily', 'Enable MFA', 'Share access keys', 'Use one admin user'],
+            correctIndex: 1,
+            explanation: 'MFA improves account security significantly.',
+          },
+          {
+            question: 'Which tool sets spending thresholds with alerts?',
+            options: ['Trusted Advisor', 'AWS Budgets', 'CloudTrail', 'Inspector'],
+            correctIndex: 1,
+            explanation: 'AWS Budgets is designed for spend alerts and controls.',
+          },
+          {
+            question: 'Which service gives account-level governance across multiple AWS accounts?',
+            options: ['Organizations', 'Route 53', 'CloudFormation', 'IAM Identity Center only'],
+            correctIndex: 0,
+            explanation: 'AWS Organizations manages account groups and guardrails.',
+          },
+          {
+            question: 'What does least privilege mean?',
+            options: ['No permissions', 'Only required permissions', 'Admin for everyone', 'Temporary root'],
+            correctIndex: 1,
+            explanation: 'Grant only the minimal permissions required.',
+          },
+          {
+            question: 'Which service provides usage/cost analysis over time?',
+            options: ['Cost Explorer', 'Config', 'CloudWatch', 'ECR'],
+            correctIndex: 0,
+            explanation: 'Cost Explorer shows spend and usage trends.',
+          },
+        ]),
+      },
+    ],
+  },
+  professional: {
+    heading: 'AWS Certified Solutions Architect - Professional Roadmap',
+    description: 'Harder than Associate • advanced architecture scenarios',
+    completionStorageKey: 'cloudmentor-sap-completed',
+    quizStorageKey: 'cloudmentor-sap-quiz-passed',
+    sections: [
+      {
+        id: 'pro-multi-account',
+        order: 1,
+        title: 'Multi-Account & Governance at Scale',
+        lessons: [
+          { id: 'pro-1-1', title: 'Enterprise Multi-Account Landing Zones', youtubeId: 'nN4uRx5EJf4' },
+          { id: 'pro-1-2', title: 'SCP Strategy and Delegated Admin', youtubeId: 'YQsK4MtsELU' },
+          { id: 'pro-1-3', title: 'Cross-Account Access Patterns', youtubeId: '2z7R7l5fC7w' },
+        ],
+        quizQuestions: makeQuiz('pro-1', [
+          {
+            question: 'What is the primary purpose of Service Control Policies?',
+            options: ['Grant permissions', 'Set maximum permission guardrails', 'Replace IAM roles', 'Encrypt S3'],
+            correctIndex: 1,
+            explanation: 'SCPs restrict what can be granted in member accounts.',
+          },
+          {
+            question: 'For centralized security tooling across org accounts, what pattern is common?',
+            options: ['Single root account use', 'Delegated admin account', 'One IAM user shared everywhere', 'No Organizations'],
+            correctIndex: 1,
+            explanation: 'Delegated admin allows scoped centralized management.',
+          },
+          {
+            question: 'Which method is preferred for app-to-app cross-account auth?',
+            options: ['Long-term keys', 'AssumeRole STS', 'Root credentials', 'Static shared password'],
+            correctIndex: 1,
+            explanation: 'STS AssumeRole provides temporary credentials.',
+          },
+          {
+            question: 'What is a key reason to isolate workloads by account?',
+            options: ['Faster boot time', 'Blast-radius isolation', 'Cheaper NAT', 'Avoid IAM'],
+            correctIndex: 1,
+            explanation: 'Account boundaries improve governance and isolation.',
+          },
+          {
+            question: 'Which service helps manage account creation and hierarchy?',
+            options: ['Organizations', 'CloudTrail', 'CodeBuild', 'Auto Scaling'],
+            correctIndex: 0,
+            explanation: 'AWS Organizations manages account hierarchy and policies.',
+          },
+        ]),
+      },
+      {
+        id: 'pro-resilience',
+        order: 2,
+        title: 'Resilience, Multi-Region & Disaster Recovery',
+        lessons: [
+          { id: 'pro-2-1', title: 'RTO/RPO Driven DR Architectures', youtubeId: 'C7mT8nJ2vP0' },
+          { id: 'pro-2-2', title: 'Active-Active and Active-Passive Patterns', youtubeId: 'S6hF9jM9N3k' },
+          { id: 'pro-2-3', title: 'Cross-Region Data Replication Tradeoffs', youtubeId: 'qQ4x8bN6sY8' },
+        ],
+        quizQuestions: makeQuiz('pro-2', [
+          {
+            question: 'Which DR model usually has the lowest RTO and RPO?',
+            options: ['Backup & restore', 'Pilot light', 'Warm standby', 'Multi-site active-active'],
+            correctIndex: 3,
+            explanation: 'Active-active generally offers fastest recovery with highest cost/complexity.',
+          },
+          {
+            question: 'What is the key architectural tradeoff of active-active multi-region?',
+            options: ['No complexity', 'Higher cost and conflict complexity', 'No latency concerns', 'No DNS needed'],
+            correctIndex: 1,
+            explanation: 'Active-active increases cost and consistency/operations complexity.',
+          },
+          {
+            question: 'If business mandates near-zero data loss, what should architect prioritize?',
+            options: ['Weekly snapshots', 'Cross-region synchronous-like patterns where possible', 'Single AZ DB', 'Larger EC2 instance'],
+            correctIndex: 1,
+            explanation: 'Low RPO requires replication and resilient failover design.',
+          },
+          {
+            question: 'Which AWS service helps route users to healthy regional endpoints?',
+            options: ['Route 53', 'SQS', 'SNS', 'CloudTrail'],
+            correctIndex: 0,
+            explanation: 'Route 53 supports health-check based DNS routing.',
+          },
+          {
+            question: 'What should drive DR pattern selection first?',
+            options: ['Engineer preference', 'RTO/RPO and business criticality', 'Only cost', 'Only team size'],
+            correctIndex: 1,
+            explanation: 'Business recovery objectives should drive architecture decisions.',
+          },
+        ]),
+      },
+      {
+        id: 'pro-performance-cost',
+        order: 3,
+        title: 'Performance and Cost at Enterprise Scale',
+        lessons: [
+          { id: 'pro-3-1', title: 'High-Scale Performance Patterns', youtubeId: 'V9qj0f5f7sY' },
+          { id: 'pro-3-2', title: 'Observability for Complex Systems', youtubeId: '6Q9fS3wYxqE' },
+          { id: 'pro-3-3', title: 'FinOps and Advanced Cost Controls', youtubeId: 'zD6N4wQ8mLQ' },
+        ],
+        quizQuestions: makeQuiz('pro-3', [
+          {
+            question: 'What is a common enterprise FinOps control?',
+            options: ['No tagging', 'Cost allocation tags + budgets + anomaly detection', 'Only on-demand everywhere', 'Disable monitoring'],
+            correctIndex: 1,
+            explanation: 'FinOps relies on tagging, governance, and proactive controls.',
+          },
+          {
+            question: 'For read-heavy global workloads, which improves latency?',
+            options: ['Single-region monolith only', 'Regional caching and read replicas', 'Bigger NAT gateway', 'Disable CDN'],
+            correctIndex: 1,
+            explanation: 'Distributed read paths reduce latency and improve scale.',
+          },
+          {
+            question: 'Which is a practical way to reduce observability blind spots?',
+            options: ['Only logs', 'Unified metrics, logs, traces correlation', 'No alarms', 'Manual weekly checks'],
+            correctIndex: 1,
+            explanation: 'Correlating telemetry improves incident triage and root cause speed.',
+          },
+          {
+            question: 'What is the best statement about architectural tradeoffs at Professional level?',
+            options: ['Always optimize one pillar only', 'Balance reliability, performance, security, and cost by context', 'Cost is irrelevant', 'Ignore operations'],
+            correctIndex: 1,
+            explanation: 'Professional-level design is about contextual tradeoff decisions.',
+          },
+          {
+            question: 'Which savings mechanism can flex across EC2/Fargate/Lambda usage?',
+            options: ['Reserved capacity only', 'Compute Savings Plans', 'Spot only', 'Dedicated Hosts only'],
+            correctIndex: 1,
+            explanation: 'Compute Savings Plans provide broad flexibility across compute services.',
+          },
+        ]),
+      },
+    ],
+  },
+}
+
+export function SAARoadmapViewer({
+  track = 'associate',
+}: {
+  track?: 'associate' | 'practitioner' | 'professional'
+}) {
+  const roadmap = roadmapByTrack[track]
+  const sections = roadmap.sections
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [selectedLesson, setSelectedLesson] = useState<RoadmapLesson | null>(null)
   const [completedLessonIds, setCompletedLessonIds] = useState<Set<string>>(new Set())
@@ -348,6 +448,8 @@ export function SAARoadmapViewer() {
   const [sidebarMinimized, setSidebarMinimized] = useState(false)
 
   useEffect(() => {
+    const STORAGE_KEY = roadmap.completionStorageKey
+    const QUIZ_STORAGE_KEY = roadmap.quizStorageKey
     const initialExpanded = sections.reduce<Record<string, boolean>>((acc, section, index) => {
       acc[section.id] = index === 0
       return acc
@@ -362,7 +464,7 @@ export function SAARoadmapViewer() {
     if (storedQuizPassed) {
       setPassedSectionIds(new Set(JSON.parse(storedQuizPassed) as string[]))
     }
-  }, [sections])
+  }, [sections, roadmap.completionStorageKey, roadmap.quizStorageKey])
 
   const allLessons = useMemo(() => sections.flatMap((section) => section.lessons), [sections])
   const totalLessons = allLessons.length
@@ -389,7 +491,7 @@ export function SAARoadmapViewer() {
     >
       <Card className="border-primary/20 bg-primary/5">
         <CardHeader>
-          <CardTitle>AWS Certified Solutions Architect - Associate Roadmap</CardTitle>
+          <CardTitle>{roadmap.heading}</CardTitle>
           <CardDescription>{completedCount}/{totalLessons} lessons completed</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -407,7 +509,7 @@ export function SAARoadmapViewer() {
         <Card>
           <CardHeader>
             <CardTitle>Course Lessons (Roadmap View)</CardTitle>
-            <CardDescription>Section-wise progression with YouTube lessons</CardDescription>
+            <CardDescription>{roadmap.description}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="relative pl-8">
@@ -470,6 +572,7 @@ export function SAARoadmapViewer() {
                                   size="sm"
                                   onClick={() =>
                                     setCompletedLessonIds((prev) => {
+                                      const STORAGE_KEY = roadmap.completionStorageKey
                                       const next = new Set(prev)
                                       if (next.has(lesson.id)) {
                                         next.delete(lesson.id)
@@ -500,10 +603,11 @@ export function SAARoadmapViewer() {
                         <SectionQuiz
                           sectionName={section.title}
                           moduleTitles={section.lessons.map((lesson) => lesson.title)}
-                          questions={architectQuizQuestions}
+                          questions={section.quizQuestions}
                           onComplete={(passed) => {
                             if (!passed) return
                             setPassedSectionIds((prev) => {
+                              const QUIZ_STORAGE_KEY = roadmap.quizStorageKey
                               const next = new Set(prev)
                               next.add(section.id)
                               localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(Array.from(next)))

@@ -35,7 +35,12 @@ type MockAttempt = {
 type MockAttemptsStore = Record<string, MockAttempt[]>
 const MOCK_ATTEMPTS_STORAGE_KEY = 'cloudmentor-mock-attempts'
 const SAA_COMPLETION_STORAGE_KEY = 'cloudmentor-saa-completed'
-const SAA_TOTAL_LESSONS = 51
+const PRACTITIONER_COMPLETION_STORAGE_KEY = 'cloudmentor-practitioner-completed'
+const PROFESSIONAL_COMPLETION_STORAGE_KEY = 'cloudmentor-sap-completed'
+const ASSOCIATE_LESSON_ID_PREFIX = 'assoc-'
+const PRACTITIONER_LESSON_ID_PREFIX = 'prac-'
+const PROFESSIONAL_LESSON_ID_PREFIX = 'pro-'
+const TRACK_TOTAL_LESSONS = 9
 
 interface ProgressStats {
   courses: CourseProgress[]
@@ -82,24 +87,46 @@ export default function ProgressPage() {
       const assessmentData = (data.assessments || []) as AssessmentResult[]
       const gamificationData = (data.gamification ?? null) as GamificationStats | null
 
-      const completedSaaIds = (() => {
+      const getStoredIds = (key: string) => {
         try {
-          const raw = localStorage.getItem(SAA_COMPLETION_STORAGE_KEY)
+          const raw = localStorage.getItem(key)
           return raw ? (JSON.parse(raw) as string[]) : []
         } catch {
           return []
         }
-      })()
+      }
+
+      const countValidLessons = (ids: string[], prefix: string) =>
+        ids.filter((id) => typeof id === 'string' && id.startsWith(prefix)).length
+
+      const associateCompleted = countValidLessons(
+        getStoredIds(SAA_COMPLETION_STORAGE_KEY),
+        ASSOCIATE_LESSON_ID_PREFIX,
+      )
+      const practitionerCompleted = countValidLessons(
+        getStoredIds(PRACTITIONER_COMPLETION_STORAGE_KEY),
+        PRACTITIONER_LESSON_ID_PREFIX,
+      )
+      const professionalCompleted = countValidLessons(
+        getStoredIds(PROFESSIONAL_COMPLETION_STORAGE_KEY),
+        PROFESSIONAL_LESSON_ID_PREFIX,
+      )
 
       const normalizedProgressData = progressData.map((course) => {
         const title = course.course_title.toLowerCase()
-        const isSaaAssociate =
+        const isAssociate =
           title.includes('solutions architect') && title.includes('associate')
+        const isPractitioner = title.includes('cloud practitioner')
+        const isProfessional = title.includes('solutions architect') && title.includes('professional')
 
-        if (!isSaaAssociate) return course
+        if (!isAssociate && !isPractitioner && !isProfessional) return course
 
-        const liveCompleted = completedSaaIds.length
-        const liveTotal = Math.max(course.total_lessons || 0, SAA_TOTAL_LESSONS)
+        const liveCompleted = isAssociate
+          ? associateCompleted
+          : isPractitioner
+            ? practitionerCompleted
+            : professionalCompleted
+        const liveTotal = Math.max(course.total_lessons || 0, TRACK_TOTAL_LESSONS)
         const livePercentage = liveTotal > 0 ? Math.round((liveCompleted / liveTotal) * 100) : 0
 
         return {

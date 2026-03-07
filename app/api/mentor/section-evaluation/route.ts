@@ -168,7 +168,7 @@ export async function POST(request: Request) {
     const result = await generateTextWithGemini({
       system:
         'You are an AWS learning evaluator. Output strictly valid JSON only. No markdown.',
-      prompt: `Evaluate this learner's COMPLETE 25-question section quiz and map outcomes to subsection modules.
+      prompt: `Evaluate this learner's section quiz result and map outcomes to subsection modules.
 
 Section: ${sectionName}
 Modules: ${moduleTitles.join(' | ')}
@@ -200,7 +200,7 @@ Rules:
   "recommendations": string[]
 }
 - weakModules/strongModules/studyAgainTopics must contain ONLY names from provided Modules list.
-- Build modulePerformance from all 25 questions.
+- Build modulePerformance from all provided questions (${totalQuestions} total).
 - Keep analysis under 90 words and recommendations max 4 lines.`,
     })
 

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Loader2, BookOpen, Clock, Award } from 'lucide-react'
 import type { Course, Lesson } from '@/lib/types/database'
 import Link from 'next/link'
-import { IAMModuleViewer } from '@/components/iam-module-viewer'
 import { SAARoadmapViewer } from '@/components/saa-roadmap-viewer'
 
 export default function CourseDetailPage() {
@@ -66,6 +65,12 @@ export default function CourseDetailPage() {
   const isSaaAssociateCourse = course.title
     .toLowerCase()
     .includes('solutions architect - associate')
+  const isCloudPractitionerCourse = course.title
+    .toLowerCase()
+    .includes('cloud practitioner')
+  const isSaaProfessionalCourse = course.title
+    .toLowerCase()
+    .includes('solutions architect - professional')
 
   return (
     <div className="space-y-6">
@@ -136,16 +141,17 @@ export default function CourseDetailPage() {
         </Card>
       </div>
 
-      {/* IAM Module Section - Special Display for Cloud Practitioner */}
-      {course.title === 'AWS Certified Cloud Practitioner' && (
-        <div>
-          <IAMModuleViewer courseId={courseId} />
-        </div>
-      )}
-
-      {/* SAA Associate: Roadmap-based video view only */}
-      {isSaaAssociateCourse ? (
-        <SAARoadmapViewer />
+      {/* Certification roadmap view with sections, quizzes, progress, and AI analysis */}
+      {isSaaAssociateCourse || isCloudPractitionerCourse || isSaaProfessionalCourse ? (
+        <SAARoadmapViewer
+          track={
+            isSaaProfessionalCourse
+              ? 'professional'
+              : isCloudPractitionerCourse
+                ? 'practitioner'
+                : 'associate'
+          }
+        />
       ) : (
         <Card>
           <CardHeader>

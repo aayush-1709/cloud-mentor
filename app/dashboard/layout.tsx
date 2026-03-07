@@ -86,14 +86,14 @@ export default function DashboardLayout({
       <aside
         className={`fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card shadow-lg transition-transform duration-200 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0 flex flex-col`}
+        } lg:translate-x-0 flex flex-col overflow-hidden`}
       >
         <div className="p-6 border-b border-border">
           <h1 className="text-xl font-bold text-primary">CloudMentor</h1>
           <p className="text-xs text-muted-foreground mt-1">AWS Mastery Platform</p>
         </div>
 
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 min-h-0 overflow-y-auto p-4">
           <ul className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon
