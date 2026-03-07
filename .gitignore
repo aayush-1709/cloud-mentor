@@ -13,4 +13,6 @@ node_modules/
 .DS_Store
 .env.development
 
+
+new_updates_deploy.txt
 cloudmentorkey.pem
