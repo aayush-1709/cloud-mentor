@@ -105,7 +105,7 @@ export default function Page() {
 
       {/* Footer */}
       <footer className="border-t bg-card py-6 px-6 text-center text-sm text-muted-foreground">
-        <p>© 2024 CloudMentor AI. All rights reserved.</p>
+        <p>© 2026 CloudMentor AI. All rights reserved.</p>
       </footer>
     </main>
   )
